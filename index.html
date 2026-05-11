@@ -1,0 +1,1531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Lift Log</title>
+<meta name="theme-color" content="#0a0a0b" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Lift Log" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Lift Log","short_name":"Lift Log","start_url":".","display":"standalone","background_color":"%230a0a0b","theme_color":"%230a0a0b","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" rx=\"96\" fill=\"%230a0a0b\"/><path fill=\"%23ff6a1a\" d=\"M170 110h60v240h130v60H170z\"/></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}' />
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230a0a0b"/><path fill="%23ff6a1a" d="M22 14h7v30h17v7H22z"/></svg>' />
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="32" fill="%230a0a0b"/><path fill="%23ff6a1a" d="M60 38h22v84h48v22H60z"/></svg>' />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --bg-2: #111114;
+    --card: #16161a;
+    --card-2: #1c1c22;
+    --border: #26262e;
+    --border-2: #33333d;
+    --text: #f5f5f7;
+    --muted: #8a8a93;
+    --dim: #5a5a63;
+    --accent: #ff6a1a;
+    --accent-soft: rgba(255,106,26,.12);
+    --accent-glow: rgba(255,106,26,.35);
+    --success: #2ecf7f;
+    --danger: #ff4d6a;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 8px 24px rgba(0,0,0,.35);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,106,26,.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(46,207,127,.05), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.01em;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+
+  /* Layout */
+  .app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 22px 120px;
+  }
+  header.brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 800; font-size: 20px; letter-spacing: -0.02em;
+  }
+  .logo .mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), #ff9a3c);
+    display: grid; place-items: center;
+    box-shadow: 0 6px 18px var(--accent-glow);
+    color: #1a0a00; font-weight: 900;
+  }
+  .logo small { color: var(--muted); font-weight: 500; margin-left: 4px; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .streak {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 13px; color: var(--muted);
+  }
+  .streak strong { color: var(--text); }
+  .streak .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); }
+
+  /* Tabs */
+  nav.tabs {
+    display: flex; gap: 4px; padding: 4px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  nav.tabs button {
+    flex: 1;
+    padding: 10px 14px;
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    font-weight: 600; font-size: 14px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all .15s ease;
+    white-space: nowrap;
+  }
+  nav.tabs button:hover { color: var(--text); }
+  nav.tabs button.active {
+    background: var(--bg-2);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px var(--border-2);
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  .card + .card { margin-top: 16px; }
+  .card h2 { margin: 0 0 14px; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .card h2 .sub { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* KPI grid */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+  .kpi .value { font-size: 28px; font-weight: 800; margin-top: 6px; letter-spacing: -0.02em; }
+  .kpi .value small { font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+  .kpi.accent { background: linear-gradient(180deg, var(--accent-soft), transparent), var(--card); border-color: rgba(255,106,26,.25); }
+  .kpi.accent .value { color: var(--accent); }
+
+  /* Buttons */
+  .btn {
+    appearance: none;
+    background: var(--card-2);
+    color: var(--text);
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .12s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: inherit;
+  }
+  .btn:hover { border-color: #44444f; background: #20202a; }
+  .btn.primary {
+    background: linear-gradient(180deg, #ff7d2e, var(--accent));
+    color: #1a0a00;
+    border-color: transparent;
+    box-shadow: 0 6px 18px var(--accent-glow);
+  }
+  .btn.primary:hover { filter: brightness(1.05); }
+  .btn.ghost { background: transparent; border-color: var(--border); }
+  .btn.danger { color: var(--danger); border-color: rgba(255,77,106,.25); }
+  .btn.danger:hover { background: rgba(255,77,106,.08); }
+  .btn.sm { padding: 6px 10px; font-size: 12px; }
+  .btn.icon { padding: 8px 10px; }
+
+  /* Inputs */
+  input, select, textarea {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--bg-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 16px; /* prevents iOS zoom on focus */
+    width: 100%;
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+  pre.freeform-notes {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    margin: 6px 0 0;
+    color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.55;
+  }
+  input:focus, select:focus, textarea:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  label.field { display: block; }
+  label.field .lbl { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+  .row { display: grid; gap: 10px; }
+  .row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .row.cols-4 { grid-template-columns: 1.4fr .8fr .8fr auto; align-items: end; }
+  @media (max-width: 640px) {
+    .row.cols-4 { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Set list */
+  .sets { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .set-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .set-row .idx {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--card-2);
+    color: var(--muted);
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .set-row input { padding: 7px 10px; background: transparent; border-color: transparent; }
+  .set-row input:focus { background: var(--card); border-color: var(--border-2); }
+
+  /* Exercise card in workout builder */
+  .exercise-block {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .exercise-block .ex-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .exercise-block .ex-name {
+    font-weight: 700; font-size: 15px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .exercise-block .ex-name .tag {
+    font-size: 10px; padding: 3px 7px; border-radius: 5px;
+    background: var(--accent-soft); color: var(--accent);
+    font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  /* History list */
+  .workout-item {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .workout-item header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .workout-item .when { font-weight: 700; }
+  .workout-item .meta { color: var(--muted); font-size: 12px; }
+  .workout-item ul { margin: 0; padding-left: 0; list-style: none; }
+  .workout-item li { font-size: 13px; color: var(--muted); padding: 3px 0; display: flex; justify-content: space-between; gap: 12px; }
+  .workout-item li b { color: var(--text); font-weight: 600; }
+
+  /* Template card */
+  .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .template-card {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .template-card h3 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .template-card .ex-count { font-size: 12px; color: var(--muted); }
+  .template-card .exs { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .template-card .actions { display: flex; gap: 6px; margin-top: auto; }
+
+  /* PR badges */
+  .pr-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .pr {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px;
+  }
+  .pr .exn { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .pr .v { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-top: 4px; }
+  .pr .v small { font-size: 12px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+  .pr .when { font-size: 11px; color: var(--dim); margin-top: 4px; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 36px 20px; color: var(--muted); }
+  .empty h3 { color: var(--text); margin: 0 0 6px; font-weight: 700; }
+  .empty p { margin: 0 0 16px; font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--card); border: 1px solid var(--border-2);
+    color: var(--text);
+    padding: 10px 16px; border-radius: 999px;
+    font-size: 14px; font-weight: 600;
+    opacity: 0; pointer-events: none;
+    transition: all .2s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: rgba(46,207,127,.3); }
+
+  /* Utility */
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .hstack { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .spacer { flex: 1; }
+  .muted { color: var(--muted); }
+  .danger { color: var(--danger); }
+  .accent { color: var(--accent); }
+  .pill { display: inline-flex; padding: 3px 8px; border-radius: 999px; font-size: 11px; background: var(--bg-2); border: 1px solid var(--border); color: var(--muted); font-weight: 600; }
+  .pill.pr { background: var(--accent-soft); border-color: rgba(255,106,26,.3); color: var(--accent); }
+  hr.sep { border: 0; border-top: 1px solid var(--border); margin: 14px 0; }
+
+  /* Chart */
+  .chart-wrap { position: relative; height: 280px; }
+  .chart-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* Hide scrollbar in tab nav */
+  nav.tabs::-webkit-scrollbar { display: none; }
+
+  /* Fade-in */
+  .view { animation: fade .18s ease-out; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* Auth */
+  .auth-wrap {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 18px;
+  }
+  .auth-card {
+    width: 100%; max-width: 380px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
+  }
+  .auth-card .brand-block { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .auth-card h1 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
+  .auth-card .sub { color: var(--muted); font-size: 13px; margin: 4px 0 22px; }
+  .auth-tabs { display: flex; gap: 4px; padding: 4px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 18px; }
+  .auth-tabs button { flex: 1; padding: 8px; background: transparent; border: 0; color: var(--muted); font-weight: 600; font-size: 13px; border-radius: 7px; cursor: pointer; font-family: inherit; }
+  .auth-tabs button.active { background: var(--card-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--border-2); }
+  .auth-error { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 8px; }
+  .auth-foot { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; line-height: 1.5; text-align: center; }
+  .auth-foot strong { color: var(--text); }
+
+  /* iOS install hint */
+  .ios-hint { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.5; }
+  .ios-hint strong { color: var(--text); }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 640px) {
+    .app { padding: 16px 14px 100px; }
+    header.brand { flex-wrap: wrap; gap: 10px; }
+    .logo { font-size: 18px; }
+    .logo .mark { width: 30px; height: 30px; border-radius: 8px; font-size: 14px; }
+    .streak { padding: 7px 11px; font-size: 12px; }
+    nav.tabs {
+      margin: 0 -14px 20px;
+      padding: 4px 8px;
+      border-radius: 0;
+      border-left: 0; border-right: 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    nav.tabs button { flex: 0 0 auto; padding: 9px 14px; font-size: 13px; }
+    .card { padding: 14px; border-radius: 12px; }
+    .card h2 { font-size: 15px; flex-wrap: wrap; }
+    .card h2 .sub { font-size: 11px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .kpi { padding: 12px 14px; }
+    .kpi .value { font-size: 22px; }
+    .kpi .value small { font-size: 12px; }
+    .btn { padding: 10px 14px; min-height: 40px; }
+    .btn.sm { padding: 8px 10px; min-height: 34px; }
+    .row.cols-2, .row.cols-3 { grid-template-columns: 1fr; }
+    .row.cols-4 { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row.cols-4 .field:first-child { grid-column: 1 / -1; }
+    .set-row { grid-template-columns: 28px 1fr 1fr 36px; gap: 8px; padding: 7px 9px; }
+    .set-row .idx { width: 24px; height: 24px; font-size: 11px; }
+    .set-row input { padding: 9px 8px; font-size: 15px; }
+    .exercise-block { padding: 12px; }
+    .exercise-block .ex-name { font-size: 14px; flex-wrap: wrap; }
+    .templates-grid { grid-template-columns: 1fr; }
+    .template-card { padding: 12px; }
+    .workout-item { padding: 12px 14px; }
+    .workout-item header { flex-wrap: wrap; gap: 6px; }
+    .workout-item li { flex-direction: column; align-items: flex-start; gap: 2px; padding: 4px 0; }
+    .chart-wrap { height: 240px; }
+    .chart-controls { width: 100%; flex-direction: column; align-items: stretch; }
+    .chart-controls select { width: 100% !important; }
+    .toast { left: 14px; right: 14px; transform: none; bottom: 16px; width: auto; text-align: center; }
+    .toast.show { transform: none; }
+    .hstack { gap: 8px; }
+    pre.freeform-notes { font-size: 12.5px; }
+  }
+  @media (max-width: 380px) {
+    .kpis { grid-template-columns: 1fr; }
+    .kpi .value { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="auth-wrap" hidden>
+  <div class="auth-card">
+    <div class="brand-block">
+      <div class="mark" style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#ff7d2e,#ff6a1a);display:grid;place-items:center;color:#1a0a00;font-weight:900;box-shadow:0 6px 18px var(--accent-glow);">L</div>
+      <h1>Lift Log</h1>
+    </div>
+    <div class="sub" id="auth-sub">Sign in to track your lifts. Your data stays on this device.</div>
+    <div class="auth-tabs">
+      <button id="tab-login" type="button" class="active">Sign in</button>
+      <button id="tab-signup" type="button">Create account</button>
+    </div>
+    <form id="auth-form" autocomplete="on" novalidate>
+      <label class="field" style="margin-bottom:12px;">
+        <span class="lbl">Email</span>
+        <input id="auth-email" type="email" autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" placeholder="you@example.com" />
+      </label>
+      <label class="field">
+        <span class="lbl">Password</span>
+        <input id="auth-pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+      </label>
+      <div class="auth-error" id="auth-error"></div>
+      <button class="btn primary" id="auth-submit" type="submit" style="width:100%; margin-top:14px;">Sign in</button>
+    </form>
+    <div class="auth-foot">
+      <strong>Privacy:</strong> accounts are stored only on this browser. Each person sees only their own workouts. No server.
+    </div>
+    <div class="ios-hint" id="ios-hint" hidden>
+      <strong>On iPhone:</strong> after signing in, tap <strong>Share → Add to Home Screen</strong>. This keeps your data safe across Safari clean-ups.
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app-main" hidden>
+
+  <header class="brand">
+    <div class="logo">
+      <div class="mark">L</div>
+      <div>Lift Log</div>
+    </div>
+    <div class="streak" title="Weekly target — change in Settings">
+      <span class="dot"></span>
+      <span><strong id="goal-current">0</strong> / <strong id="goal-target">4</strong> this week</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button data-tab="today" class="active">Today</button>
+    <button data-tab="quick">Quick log</button>
+    <button data-tab="log">Log workout</button>
+    <button data-tab="templates">Templates</button>
+    <button data-tab="progress">Progress</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+
+  <!-- TODAY -->
+  <section id="view-today" class="view">
+    <div class="kpis">
+      <div class="kpi accent">
+        <div class="label">This week</div>
+        <div class="value" id="kpi-week">0<small>lifts</small></div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total volume (7d)</div>
+        <div class="value mono" id="kpi-volume">0<small>lbs</small></div>
+      </div>
+      <div class="kpi">
+        <div class="label">Workouts logged</div>
+        <div class="value" id="kpi-total">0</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Exercises tracked</div>
+        <div class="value" id="kpi-exercises">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Quick start <span class="sub">tap a template to begin</span></h2>
+      <div id="quickstart" class="templates-grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Recent workouts</h2>
+      <div id="recent-list"></div>
+    </div>
+  </section>
+
+  <!-- QUICK LOG -->
+  <section id="view-quick" class="view" hidden>
+    <div class="card">
+      <h2>Quick log <span class="sub">paste your workout, no structure needed</span></h2>
+      <div class="row cols-2" style="margin-bottom: 14px;">
+        <label class="field">
+          <span class="lbl">Date</span>
+          <input type="date" id="quick-date" />
+        </label>
+        <label class="field">
+          <span class="lbl">Title (optional)</span>
+          <input type="text" id="quick-title" placeholder="e.g. Push Day" />
+        </label>
+      </div>
+      <label class="field">
+        <span class="lbl">Workout notes</span>
+        <textarea id="quick-notes" rows="10" placeholder="Bench Press 4x8 @ 185&#10;Incline DB Press 3x10 @ 60&#10;Cable Fly 3x12 @ 25&#10;&#10;Felt strong today."></textarea>
+      </label>
+      <div class="hstack" style="margin-top: 12px;">
+        <span class="muted" style="font-size: 12px;">Saves as-is — no parsing.</span>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="quick-clear">Clear</button>
+        <button class="btn primary" id="quick-save">Save</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Recent quick logs</h2>
+      <div id="quick-recent"></div>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section id="view-log" class="view" hidden>
+    <div class="card">
+      <h2>New workout <span class="sub" id="log-date-label"></span></h2>
+      <div class="row cols-2" style="margin-bottom: 14px;">
+        <label class="field">
+          <span class="lbl">Date</span>
+          <input type="date" id="log-date" />
+        </label>
+        <label class="field">
+          <span class="lbl">Load template (optional)</span>
+          <select id="log-template">
+            <option value="">— None —</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="log-exercises"></div>
+
+      <div class="hstack" style="margin-top: 12px;">
+        <button class="btn" id="add-exercise">+ Add exercise</button>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="cancel-workout">Reset</button>
+        <button class="btn primary" id="save-workout">Save workout</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEMPLATES -->
+  <section id="view-templates" class="view" hidden>
+    <div class="card">
+      <h2>Your templates <button class="btn primary sm" id="new-template">+ New template</button></h2>
+      <div id="templates-grid" class="templates-grid"></div>
+    </div>
+
+    <div class="card" id="template-editor" hidden>
+      <h2 id="template-editor-title">Edit template</h2>
+      <label class="field">
+        <span class="lbl">Template name</span>
+        <input type="text" id="tpl-name" placeholder="e.g. Push Day A" />
+      </label>
+      <div id="tpl-exercises" style="margin-top: 12px;"></div>
+      <div class="hstack" style="margin-top: 12px;">
+        <button class="btn" id="tpl-add-ex">+ Add exercise</button>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="tpl-cancel">Cancel</button>
+        <button class="btn primary" id="tpl-save">Save template</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="view-progress" class="view" hidden>
+    <div class="card">
+      <h2>Progress chart
+        <div class="chart-controls">
+          <select id="chart-exercise" style="min-width: 180px;"></select>
+          <select id="chart-metric" style="width: 140px;">
+            <option value="topSet">Top set (weight)</option>
+            <option value="e1rm">Estimated 1RM</option>
+            <option value="volume">Volume / session</option>
+          </select>
+        </div>
+      </h2>
+      <div class="chart-wrap"><canvas id="progress-chart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="view-settings" class="view" hidden>
+    <div class="card">
+      <h2>Preferences</h2>
+      <div class="row cols-2">
+        <label class="field">
+          <span class="lbl">Units</span>
+          <select id="setting-units">
+            <option value="lbs">Pounds (lbs)</option>
+            <option value="kg">Kilograms (kg)</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="lbl">Weekly workout target</span>
+          <input type="number" id="setting-target" min="1" max="14" value="4" />
+        </label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Data</h2>
+      <p class="muted" style="margin: 0 0 12px;">Your logs are saved to this browser. Back them up below.</p>
+      <div class="hstack">
+        <button class="btn" id="export-data">Export JSON</button>
+        <button class="btn" id="import-data">Import JSON</button>
+        <input type="file" id="import-file" accept="application/json" hidden />
+        <div class="spacer"></div>
+        <button class="btn danger" id="reset-data">Reset all data</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Account</h2>
+      <p class="muted" style="margin: 0 0 12px;">Signed in as <strong id="settings-email" style="color:var(--text)"></strong></p>
+      <div class="hstack">
+        <button class="btn" id="logout-btn">Sign out</button>
+        <button class="btn danger" id="delete-account">Delete account</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>About</h2>
+      <p class="muted" style="margin: 0;">Lift Log keeps each account's data separate, stored only in this browser. For permanent storage on iPhone, add to your Home Screen.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   STATE & STORAGE
+   ============================================================ */
+const ACCOUNTS_KEY = 'liftlog.accounts.v1';
+const SESSION_KEY = 'liftlog.session.v1';
+const USER_KEY = email => 'liftlog.user.' + email;
+const OWNER_EMAIL = 'albert.fiset11@gmail.com'; // pre-seeded with personal templates
+
+const DEFAULT_TEMPLATES = [
+  { id: 't_push', name: 'Push Day', exercises: [
+    { name: 'Bench Press', sets: 4, reps: '6-8' },
+    { name: 'Overhead Press', sets: 3, reps: '8-10' },
+    { name: 'Incline Dumbbell Press', sets: 3, reps: '10' },
+    { name: 'Cable Fly', sets: 3, reps: '12' },
+    { name: 'Tricep Pushdown', sets: 3, reps: '12' },
+  ]},
+  { id: 't_pull', name: 'Pull Day', exercises: [
+    { name: 'Deadlift', sets: 3, reps: '5' },
+    { name: 'Pull-up', sets: 4, reps: '6-10' },
+    { name: 'Barbell Row', sets: 3, reps: '8' },
+    { name: 'Face Pull', sets: 3, reps: '15' },
+    { name: 'Barbell Curl', sets: 3, reps: '10' },
+  ]},
+  { id: 't_legs', name: 'Leg Day', exercises: [
+    { name: 'Back Squat', sets: 4, reps: '5-8' },
+    { name: 'Romanian Deadlift', sets: 3, reps: '8' },
+    { name: 'Leg Press', sets: 3, reps: '10-12' },
+    { name: 'Leg Curl', sets: 3, reps: '12' },
+    { name: 'Standing Calf Raise', sets: 4, reps: '12-15' },
+  ]},
+];
+
+const OWNER_TEMPLATES = [
+  { id: 't_upper', name: 'UPPER', exercises: [
+    { name: 'Lat Pulldown', sets: 2, reps: '8' },
+    { name: 'Pec Deck', sets: 2, reps: '8' },
+    { name: 'T-Bar Row', sets: 2, reps: '8' },
+    { name: 'Incline Machine Bench Press', sets: 3, reps: '8' },
+    { name: 'DB Preacher Curl', sets: 3, reps: '8' },
+    { name: 'JM Press', sets: 3, reps: '8' },
+    { name: 'Cable Lateral Raise', sets: 3, reps: '8' },
+    { name: 'Tricep Pushdown / Dips', sets: 3, reps: '8' },
+    { name: 'Reverse Pec Deck', sets: 2, reps: '10' },
+  ]},
+  { id: 't_lower', name: 'LOWER', exercises: [
+    { name: 'Hack Squat', sets: 2, reps: '8' },
+    { name: 'Romanian Deadlift', sets: 2, reps: '8' },
+    { name: 'Adductor Machine', sets: 2, reps: '12' },
+    { name: 'Leg Extension', sets: 2, reps: '10' },
+    { name: 'Leg Curl', sets: 3, reps: '10' },
+    { name: 'Leg Press Calf Raises', sets: 3, reps: '15' },
+    { name: 'Abs Machine', sets: 3, reps: '10' },
+  ]},
+];
+
+let state = {
+  workouts: [],       // [{id, date, exercises:[{name, sets:[{weight, reps}]}]}] OR [{id, date, freeform:true, title, notes}]
+  templates: DEFAULT_TEMPLATES,
+  units: 'lbs',
+  weeklyTarget: 4,
+};
+
+function uid() { return Math.random().toString(36).slice(2, 10); }
+
+/* ---------- AUTH ---------- */
+function loadAccounts() {
+  try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveAccounts(a) { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(a)); }
+function currentUser() { return localStorage.getItem(SESSION_KEY); }
+
+// Pure-JS SHA-256 — works on file:// where crypto.subtle is unavailable
+function sha256(ascii) {
+  function rightRotate(value, amount) { return (value>>>amount) | (value<<(32 - amount)); }
+  const mathPow = Math.pow, maxWord = mathPow(2, 32);
+  let result = '';
+  const words = [];
+  const asciiBitLength = ascii.length * 8;
+  const hash = sha256.h = sha256.h || [];
+  const k = sha256.k = sha256.k || [];
+  let primeCounter = k.length;
+  const isComposite = {};
+  for (let candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (let i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+      hash[primeCounter] = (mathPow(candidate, 0.5)*maxWord)|0;
+      k[primeCounter++] = (mathPow(candidate, 1/3)*maxWord)|0;
+    }
+  }
+  ascii = unescape(encodeURIComponent(ascii));
+  let str = ascii + '\x80';
+  while (str.length % 64 - 56) str += '\x00';
+  for (let i = 0; i < str.length; i++) {
+    const j = str.charCodeAt(i);
+    if (j>>8) return null;
+    words[i>>2] |= j << ((3 - i)%4)*8;
+  }
+  words[words.length] = ((asciiBitLength/maxWord)|0);
+  words[words.length] = (asciiBitLength);
+  let h = hash.slice();
+  for (let j = 0; j < words.length;) {
+    const w = words.slice(j, j += 16);
+    const oldHash = h;
+    h = h.slice(0, 8);
+    for (let i = 0; i < 64; i++) {
+      const w15 = w[i - 15], w2 = w[i - 2];
+      const a = h[0], e = h[4];
+      const temp1 = h[7]
+        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+        + ((e&h[5])^((~e)&h[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (
+            w[i - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15>>>3))
+            + w[i - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2>>>10))
+          )|0
+        );
+      const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+        + ((a&h[1])^(a&h[2])^(h[1]&h[2]));
+      h = [(temp1 + temp2)|0].concat(h);
+      h[4] = (h[4] + temp1)|0;
+    }
+    for (let i = 0; i < 8; i++) h[i] = (h[i] + oldHash[i])|0;
+  }
+  for (let i = 0; i < 8; i++) {
+    for (let j = 3; j + 1; j--) {
+      const b = (h[i]>>(j*8))&255;
+      result += ((b < 16) ? 0 : '') + b.toString(16);
+    }
+  }
+  return result;
+}
+
+function signup(rawEmail, password) {
+  const email = (rawEmail || '').trim().toLowerCase();
+  if (!email.includes('@') || email.length < 4) throw new Error('Enter a valid email');
+  if (!password || password.length < 4) throw new Error('Password must be at least 4 characters');
+  const accounts = loadAccounts();
+  if (accounts[email]) throw new Error('That account already exists — sign in instead');
+  const salt = Math.random().toString(36).slice(2, 14) + Date.now().toString(36);
+  const hash = sha256(salt + password);
+  accounts[email] = { salt, hash, createdAt: new Date().toISOString() };
+  saveAccounts(accounts);
+  // seed templates for this user
+  const seedTemplates = email === OWNER_EMAIL
+    ? [...DEFAULT_TEMPLATES, ...OWNER_TEMPLATES]
+    : [...DEFAULT_TEMPLATES];
+  const userData = {
+    workouts: [],
+    templates: seedTemplates,
+    units: 'lbs',
+    weeklyTarget: 4,
+  };
+  localStorage.setItem(USER_KEY(email), JSON.stringify(userData));
+  localStorage.setItem(SESSION_KEY, email);
+}
+
+function login(rawEmail, password) {
+  const email = (rawEmail || '').trim().toLowerCase();
+  const accounts = loadAccounts();
+  const acct = accounts[email];
+  if (!acct) throw new Error('No account with that email');
+  const hash = sha256(acct.salt + password);
+  if (hash !== acct.hash) throw new Error('Wrong password');
+  localStorage.setItem(SESSION_KEY, email);
+}
+
+function logout() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function deleteCurrentAccount() {
+  const email = currentUser();
+  if (!email) return;
+  localStorage.removeItem(USER_KEY(email));
+  const accounts = loadAccounts();
+  delete accounts[email];
+  saveAccounts(accounts);
+  localStorage.removeItem(SESSION_KEY);
+}
+
+/* ---------- USER DATA ---------- */
+function load() {
+  const email = currentUser();
+  if (!email) return false;
+  try {
+    const raw = localStorage.getItem(USER_KEY(email));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state = Object.assign({
+        workouts: [], templates: [], units: 'lbs', weeklyTarget: 4
+      }, parsed);
+    }
+    if (!state.templates || !state.templates.length) {
+      state.templates = email === OWNER_EMAIL ? [...DEFAULT_TEMPLATES, ...OWNER_TEMPLATES] : [...DEFAULT_TEMPLATES];
+    }
+    return true;
+  } catch (e) { console.warn('load failed', e); return false; }
+}
+function save() {
+  const email = currentUser();
+  if (!email) return;
+  localStorage.setItem(USER_KEY(email), JSON.stringify(state));
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+const $ = (s, root = document) => root.querySelector(s);
+const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+const fmtDate = d => new Date(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0,10); };
+
+function toast(msg, kind = '') {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + kind;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.className = 'toast', 1800);
+}
+
+// Brzycki estimated 1RM
+function e1rm(weight, reps) {
+  if (!weight || !reps) return 0;
+  if (reps === 1) return weight;
+  return Math.round(weight * (36 / (37 - reps)));
+}
+
+function getPRs() {
+  const prs = {};
+  for (const w of state.workouts) {
+    for (const ex of w.exercises) {
+      for (const s of ex.sets) {
+        if (!s.weight || !s.reps) continue;
+        const e = e1rm(+s.weight, +s.reps);
+        if (!prs[ex.name] || e > prs[ex.name].e1rm) {
+          prs[ex.name] = { e1rm: e, weight: +s.weight, reps: +s.reps, date: w.date };
+        }
+      }
+    }
+  }
+  return prs;
+}
+
+function startOfWeekISO() {
+  // Monday as start of week
+  const d = new Date();
+  const day = d.getDay(); // 0 Sun .. 6 Sat
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d.toISOString().slice(0,10);
+}
+function workoutsThisWeek() {
+  const start = startOfWeekISO();
+  return state.workouts.filter(w => w.date >= start).length;
+}
+
+/* ============================================================
+   TAB ROUTING
+   ============================================================ */
+function showTab(tab) {
+  $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  $$('section.view').forEach(s => s.hidden = (s.id !== 'view-' + tab));
+  if (tab === 'today') renderToday();
+  if (tab === 'quick') renderQuick();
+  if (tab === 'log') renderLogView();
+  if (tab === 'templates') renderTemplates();
+  if (tab === 'progress') renderProgress();
+  if (tab === 'settings') renderSettings();
+}
+$$('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+/* ============================================================
+   TODAY VIEW
+   ============================================================ */
+function renderToday() {
+  // KPIs
+  const now = new Date();
+  const weekAgo = daysAgo(7);
+  const weekWorkouts = state.workouts.filter(w => w.date >= weekAgo);
+  const volume = weekWorkouts.reduce((sum, w) =>
+    w.freeform ? sum : sum + w.exercises.reduce((s, ex) => s + ex.sets.reduce((ss, st) => ss + (+st.weight||0) * (+st.reps||0), 0), 0)
+  , 0);
+  const exerciseNames = new Set(
+    state.workouts.filter(w => !w.freeform).flatMap(w => w.exercises.map(e => e.name))
+  );
+
+  $('#kpi-week').innerHTML = weekWorkouts.length + '<small>lifts</small>';
+  $('#kpi-volume').innerHTML = volume.toLocaleString() + '<small>' + state.units + '</small>';
+  $('#kpi-total').textContent = state.workouts.length;
+  $('#kpi-exercises').textContent = exerciseNames.size;
+  $('#goal-current').textContent = workoutsThisWeek();
+  $('#goal-target').textContent = state.weeklyTarget || 4;
+
+  // Quick start templates
+  const qs = $('#quickstart');
+  if (!state.templates.length) {
+    qs.innerHTML = '<div class="empty"><h3>No templates yet</h3><p>Create one to start a workout in one tap.</p></div>';
+  } else {
+    qs.innerHTML = state.templates.map(t => `
+      <div class="template-card">
+        <h3>${escapeHtml(t.name)}</h3>
+        <div class="ex-count">${t.exercises.length} exercises</div>
+        <div class="exs">${t.exercises.slice(0,4).map(e => escapeHtml(e.name)).join(' · ')}${t.exercises.length > 4 ? ' …' : ''}</div>
+        <div class="actions">
+          <button class="btn primary sm" data-start="${t.id}">Start</button>
+        </div>
+      </div>
+    `).join('');
+    $$('#quickstart [data-start]').forEach(b => b.addEventListener('click', () => startFromTemplate(b.dataset.start)));
+  }
+
+  // Recent workouts
+  const recent = [...state.workouts].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
+  const list = $('#recent-list');
+  if (!recent.length) {
+    list.innerHTML = '<div class="empty"><h3>No workouts yet</h3><p>Tap a template above or log a workout to get started.</p></div>';
+  } else {
+    list.innerHTML = recent.map(w => renderWorkoutItem(w)).join('');
+  }
+}
+
+function renderWorkoutItem(w) {
+  if (w.freeform) {
+    return `
+      <div class="workout-item">
+        <header>
+          <div class="when">${fmtDate(w.date)}${w.title ? ' · ' + escapeHtml(w.title) : ''}</div>
+          <div class="meta"><span class="pill">Quick log</span></div>
+        </header>
+        <pre class="freeform-notes">${escapeHtml(w.notes || '')}</pre>
+      </div>`;
+  }
+  return `
+    <div class="workout-item">
+      <header>
+        <div class="when">${fmtDate(w.date)}</div>
+        <div class="meta">${w.exercises.length} exercises · ${totalSets(w)} sets</div>
+      </header>
+      <ul>
+        ${w.exercises.map(ex => `
+          <li><b>${escapeHtml(ex.name)}</b><span>${summarizeSets(ex.sets)}</span></li>
+        `).join('')}
+      </ul>
+    </div>`;
+}
+
+function totalSets(w) { return w.exercises.reduce((s, e) => s + e.sets.length, 0); }
+function summarizeSets(sets) {
+  if (!sets.length) return '—';
+  const tops = sets.reduce((m, s) => (+s.weight > (+m.weight||0) ? s : m), sets[0]);
+  return `${sets.length} × top ${tops.weight}${state.units} × ${tops.reps}`;
+}
+
+/* ============================================================
+   QUICK LOG VIEW
+   ============================================================ */
+function renderQuick() {
+  if (!$('#quick-date').value) $('#quick-date').value = todayISO();
+  const recent = state.workouts
+    .filter(w => w.freeform)
+    .sort((a,b) => b.date.localeCompare(a.date))
+    .slice(0, 8);
+  const root = $('#quick-recent');
+  if (!recent.length) {
+    root.innerHTML = '<div class="empty"><p>No quick logs yet. Paste a workout above to save your first one.</p></div>';
+  } else {
+    root.innerHTML = recent.map(w => `
+      <div class="workout-item">
+        <header>
+          <div class="when">${fmtDate(w.date)}${w.title ? ' · ' + escapeHtml(w.title) : ''}</div>
+          <div class="meta">
+            <button class="btn sm danger" data-rm-quick="${w.id}">Delete</button>
+          </div>
+        </header>
+        <pre class="freeform-notes">${escapeHtml(w.notes || '')}</pre>
+      </div>
+    `).join('');
+    $$('[data-rm-quick]', root).forEach(b => b.addEventListener('click', () => {
+      if (!confirm('Delete this quick log?')) return;
+      state.workouts = state.workouts.filter(w => w.id !== b.dataset.rmQuick);
+      save(); renderQuick(); toast('Deleted');
+    }));
+  }
+}
+$('#quick-save').addEventListener('click', () => {
+  const date = $('#quick-date').value || todayISO();
+  const title = $('#quick-title').value.trim();
+  const notes = $('#quick-notes').value.trim();
+  if (!notes) { toast('Add some notes first'); return; }
+  state.workouts.push({ id: uid(), date, freeform: true, title, notes });
+  save();
+  $('#quick-title').value = '';
+  $('#quick-notes').value = '';
+  toast('Quick log saved 💪', 'success');
+  renderQuick();
+});
+$('#quick-clear').addEventListener('click', () => {
+  $('#quick-title').value = '';
+  $('#quick-notes').value = '';
+});
+
+/* ============================================================
+   LOG VIEW
+   ============================================================ */
+let logDraft = { date: todayISO(), exercises: [] };
+
+function renderLogView() {
+  $('#log-date').value = logDraft.date;
+  $('#log-date-label').textContent = fmtDate(logDraft.date);
+  // Template select
+  const sel = $('#log-template');
+  sel.innerHTML = '<option value="">— None —</option>' +
+    state.templates.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+  renderLogExercises();
+}
+
+$('#log-date').addEventListener('change', e => {
+  logDraft.date = e.target.value;
+  $('#log-date-label').textContent = fmtDate(logDraft.date);
+});
+
+$('#log-template').addEventListener('change', e => {
+  if (!e.target.value) return;
+  const t = state.templates.find(x => x.id === e.target.value);
+  if (!t) return;
+  if (logDraft.exercises.length && !confirm('Replace current entries with template?')) {
+    e.target.value = '';
+    return;
+  }
+  logDraft.exercises = t.exercises.map(ex => ({
+    id: uid(),
+    name: ex.name,
+    sets: Array.from({length: ex.sets || 3}, () => ({ weight: '', reps: '' }))
+  }));
+  renderLogExercises();
+  e.target.value = '';
+});
+
+$('#add-exercise').addEventListener('click', () => {
+  const name = prompt('Exercise name:');
+  if (!name) return;
+  logDraft.exercises.push({ id: uid(), name: name.trim(), sets: [{weight:'', reps:''}] });
+  renderLogExercises();
+});
+
+$('#cancel-workout').addEventListener('click', () => {
+  if (!logDraft.exercises.length || confirm('Discard current workout?')) {
+    logDraft = { date: todayISO(), exercises: [] };
+    renderLogView();
+  }
+});
+
+$('#save-workout').addEventListener('click', () => {
+  if (!logDraft.exercises.length) { toast('Add at least one exercise'); return; }
+  // strip empty sets
+  const cleaned = logDraft.exercises.map(ex => ({
+    name: ex.name,
+    sets: ex.sets.filter(s => s.weight !== '' && s.reps !== '').map(s => ({ weight: +s.weight, reps: +s.reps }))
+  })).filter(ex => ex.sets.length);
+  if (!cleaned.length) { toast('Fill in at least one set'); return; }
+  state.workouts.push({ id: uid(), date: logDraft.date, exercises: cleaned });
+  save();
+  logDraft = { date: todayISO(), exercises: [] };
+  toast('Workout saved 💪', 'success');
+  showTab('today');
+});
+
+function renderLogExercises() {
+  const root = $('#log-exercises');
+  if (!logDraft.exercises.length) {
+    root.innerHTML = '<div class="empty"><p>Load a template above or add an exercise to begin.</p></div>';
+    return;
+  }
+  root.innerHTML = logDraft.exercises.map((ex, ei) => {
+    return `
+    <div class="exercise-block" data-ex="${ei}">
+      <div class="ex-head">
+        <div class="ex-name">
+          ${escapeHtml(ex.name)}
+        </div>
+        <div class="hstack">
+          <button class="btn sm ghost" data-rm-ex="${ei}">Remove</button>
+        </div>
+      </div>
+      <div class="sets">
+        ${ex.sets.map((s, si) => `
+          <div class="set-row">
+            <div class="idx">${si + 1}</div>
+            <input type="number" inputmode="decimal" placeholder="Weight (${state.units})" value="${s.weight}" data-set="${ei}.${si}.weight" />
+            <input type="number" inputmode="numeric" placeholder="Reps" value="${s.reps}" data-set="${ei}.${si}.reps" />
+            <button class="btn sm ghost icon" data-rm-set="${ei}.${si}" aria-label="Remove set">×</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="hstack" style="margin-top: 10px;">
+        <button class="btn sm" data-add-set="${ei}">+ Add set</button>
+        ${ex.sets.length > 0 ? `<span class="muted" style="font-size:12px;">${ex.sets.length} sets</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // wire up
+  $$('[data-set]', root).forEach(inp => {
+    inp.addEventListener('input', e => {
+      const [ei, si, field] = e.target.dataset.set.split('.');
+      logDraft.exercises[ei].sets[si][field] = e.target.value;
+    });
+  });
+  $$('[data-rm-set]', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const [ei, si] = btn.dataset.rmSet.split('.').map(Number);
+      logDraft.exercises[ei].sets.splice(si, 1);
+      if (!logDraft.exercises[ei].sets.length) logDraft.exercises[ei].sets.push({weight:'', reps:''});
+      renderLogExercises();
+    });
+  });
+  $$('[data-add-set]', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ei = +btn.dataset.addSet;
+      const last = logDraft.exercises[ei].sets.at(-1) || {};
+      logDraft.exercises[ei].sets.push({ weight: last.weight || '', reps: last.reps || '' });
+      renderLogExercises();
+    });
+  });
+  $$('[data-rm-ex]', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ei = +btn.dataset.rmEx;
+      if (confirm('Remove this exercise?')) {
+        logDraft.exercises.splice(ei, 1);
+        renderLogExercises();
+      }
+    });
+  });
+}
+
+function startFromTemplate(tid) {
+  const t = state.templates.find(x => x.id === tid);
+  if (!t) return;
+  logDraft = {
+    date: todayISO(),
+    exercises: t.exercises.map(ex => ({
+      id: uid(), name: ex.name,
+      sets: Array.from({length: ex.sets || 3}, () => ({ weight: '', reps: '' }))
+    }))
+  };
+  showTab('log');
+}
+
+/* ============================================================
+   TEMPLATES VIEW
+   ============================================================ */
+let tplDraft = null; // {id, name, exercises}
+
+function renderTemplates() {
+  const grid = $('#templates-grid');
+  if (!state.templates.length) {
+    grid.innerHTML = '<div class="empty"><h3>No templates</h3><p>Create your first routine.</p></div>';
+  } else {
+    grid.innerHTML = state.templates.map(t => `
+      <div class="template-card">
+        <h3>${escapeHtml(t.name)}</h3>
+        <div class="ex-count">${t.exercises.length} exercises</div>
+        <div class="exs">${t.exercises.map(e => escapeHtml(e.name)).join(' · ')}</div>
+        <div class="actions">
+          <button class="btn sm primary" data-start="${t.id}">Start</button>
+          <button class="btn sm" data-edit="${t.id}">Edit</button>
+          <button class="btn sm danger" data-del="${t.id}">Delete</button>
+        </div>
+      </div>
+    `).join('');
+    $$('[data-start]', grid).forEach(b => b.addEventListener('click', () => startFromTemplate(b.dataset.start)));
+    $$('[data-edit]', grid).forEach(b => b.addEventListener('click', () => openTplEditor(b.dataset.edit)));
+    $$('[data-del]', grid).forEach(b => b.addEventListener('click', () => {
+      if (!confirm('Delete this template?')) return;
+      state.templates = state.templates.filter(t => t.id !== b.dataset.del);
+      save(); renderTemplates(); toast('Template deleted');
+    }));
+  }
+  $('#template-editor').hidden = !tplDraft;
+}
+
+$('#new-template').addEventListener('click', () => {
+  tplDraft = { id: null, name: '', exercises: [{ name: '', sets: 3, reps: '8-10' }] };
+  $('#template-editor-title').textContent = 'New template';
+  $('#tpl-name').value = '';
+  renderTplExercises();
+  renderTemplates();
+});
+$('#tpl-cancel').addEventListener('click', () => { tplDraft = null; renderTemplates(); });
+$('#tpl-save').addEventListener('click', () => {
+  if (!tplDraft) return;
+  const name = $('#tpl-name').value.trim();
+  if (!name) { toast('Name required'); return; }
+  const exs = tplDraft.exercises.map(e => ({
+    name: (e.name||'').trim(), sets: +e.sets || 3, reps: e.reps || '8-10'
+  })).filter(e => e.name);
+  if (!exs.length) { toast('Add at least one exercise'); return; }
+  if (tplDraft.id) {
+    const idx = state.templates.findIndex(t => t.id === tplDraft.id);
+    state.templates[idx] = { id: tplDraft.id, name, exercises: exs };
+  } else {
+    state.templates.push({ id: 't_' + uid(), name, exercises: exs });
+  }
+  save();
+  tplDraft = null;
+  renderTemplates();
+  toast('Template saved', 'success');
+});
+$('#tpl-add-ex').addEventListener('click', () => {
+  if (!tplDraft) return;
+  tplDraft.exercises.push({ name: '', sets: 3, reps: '8-10' });
+  renderTplExercises();
+});
+
+function openTplEditor(id) {
+  const t = state.templates.find(x => x.id === id);
+  if (!t) return;
+  tplDraft = { id: t.id, name: t.name, exercises: t.exercises.map(e => ({...e})) };
+  $('#template-editor-title').textContent = 'Edit template';
+  $('#tpl-name').value = t.name;
+  renderTplExercises();
+  renderTemplates();
+  $('#template-editor').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function renderTplExercises() {
+  if (!tplDraft) return;
+  const root = $('#tpl-exercises');
+  root.innerHTML = tplDraft.exercises.map((ex, i) => `
+    <div class="row cols-4" style="margin-bottom: 8px;">
+      <label class="field"><span class="lbl">Exercise</span><input data-tpl="${i}.name" value="${escapeHtml(ex.name)}" placeholder="e.g. Bench Press" /></label>
+      <label class="field"><span class="lbl">Sets</span><input type="number" min="1" data-tpl="${i}.sets" value="${ex.sets}" /></label>
+      <label class="field"><span class="lbl">Reps</span><input data-tpl="${i}.reps" value="${escapeHtml(String(ex.reps))}" placeholder="e.g. 8-10" /></label>
+      <button class="btn ghost icon" data-tpl-rm="${i}" aria-label="Remove">×</button>
+    </div>
+  `).join('');
+  $$('[data-tpl]', root).forEach(inp => {
+    inp.addEventListener('input', e => {
+      const [i, field] = e.target.dataset.tpl.split('.');
+      tplDraft.exercises[i][field] = e.target.value;
+    });
+  });
+  $$('[data-tpl-rm]', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      tplDraft.exercises.splice(+btn.dataset.tplRm, 1);
+      renderTplExercises();
+    });
+  });
+}
+
+/* ============================================================
+   PROGRESS VIEW
+   ============================================================ */
+let chart;
+function renderProgress() {
+  const sel = $('#chart-exercise');
+  const names = [...new Set(
+    state.workouts.filter(w => !w.freeform).flatMap(w => w.exercises.map(e => e.name))
+  )].sort();
+  if (!names.length) {
+    sel.innerHTML = '<option>(no data)</option>';
+    if (chart) { chart.destroy(); chart = null; }
+    return;
+  }
+  const prev = sel.value;
+  sel.innerHTML = names.map(n => `<option ${prev===n?'selected':''}>${escapeHtml(n)}</option>`).join('');
+  drawChart();
+}
+$('#chart-exercise').addEventListener('change', drawChart);
+$('#chart-metric').addEventListener('change', drawChart);
+
+function drawChart() {
+  const name = $('#chart-exercise').value;
+  const metric = $('#chart-metric').value;
+  const points = [];
+  for (const w of state.workouts) {
+    if (w.freeform) continue;
+    const ex = w.exercises.find(e => e.name === name);
+    if (!ex || !ex.sets.length) continue;
+    let v = 0;
+    if (metric === 'topSet') v = Math.max(...ex.sets.map(s => +s.weight || 0));
+    if (metric === 'e1rm') v = Math.max(...ex.sets.map(s => e1rm(+s.weight, +s.reps)));
+    if (metric === 'volume') v = ex.sets.reduce((sum, s) => sum + (+s.weight||0)*(+s.reps||0), 0);
+    points.push({ x: w.date, y: v });
+  }
+  points.sort((a,b) => a.x.localeCompare(b.x));
+
+  if (chart) chart.destroy();
+  const ctx = $('#progress-chart').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 280);
+  grad.addColorStop(0, 'rgba(255,106,26,.35)');
+  grad.addColorStop(1, 'rgba(255,106,26,0)');
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: points.map(p => fmtDate(p.x)),
+      datasets: [{
+        label: name,
+        data: points.map(p => p.y),
+        borderColor: '#ff6a1a',
+        backgroundColor: grad,
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: '#ff6a1a',
+        pointBorderColor: '#1a0a00',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 2.5,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#16161a',
+          borderColor: '#33333d',
+          borderWidth: 1,
+          titleColor: '#f5f5f7',
+          bodyColor: '#8a8a93',
+          padding: 10,
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#8a8a93' } },
+        y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#8a8a93' }, beginAtZero: false }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettings() {
+  $('#setting-units').value = state.units;
+  $('#setting-target').value = state.weeklyTarget || 4;
+  $('#settings-email').textContent = currentUser() || '';
+}
+$('#logout-btn').addEventListener('click', () => {
+  if (!confirm('Sign out? Your data stays saved for next time.')) return;
+  logout();
+  state = { workouts: [], templates: [], units: 'lbs', weeklyTarget: 4 };
+  showAuth();
+});
+$('#delete-account').addEventListener('click', () => {
+  if (!confirm('Permanently delete this account and ALL its data?')) return;
+  if (!confirm('Really delete? This cannot be undone.')) return;
+  deleteCurrentAccount();
+  state = { workouts: [], templates: [], units: 'lbs', weeklyTarget: 4 };
+  showAuth();
+  toast('Account deleted');
+});
+$('#setting-units').addEventListener('change', e => {
+  state.units = e.target.value;
+  save();
+  toast('Units updated');
+  renderToday();
+});
+$('#setting-target').addEventListener('input', e => {
+  const v = Math.max(1, Math.min(14, +e.target.value || 4));
+  state.weeklyTarget = v;
+  save();
+  $('#goal-target').textContent = v;
+});
+
+$('#export-data').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `lift-log-${todayISO()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  toast('Exported', 'success');
+});
+
+$('#import-data').addEventListener('click', () => $('#import-file').click());
+$('#import-file').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data.workouts) throw new Error('Invalid file');
+    state = Object.assign(state, data);
+    save();
+    toast('Imported', 'success');
+    showTab('today');
+  } catch (err) { toast('Import failed: ' + err.message); }
+});
+
+$('#reset-data').addEventListener('click', () => {
+  if (!confirm('Delete ALL workouts and templates for this account? This cannot be undone.')) return;
+  const email = currentUser();
+  const seedTemplates = email === OWNER_EMAIL
+    ? [...DEFAULT_TEMPLATES, ...OWNER_TEMPLATES]
+    : [...DEFAULT_TEMPLATES];
+  state = { workouts: [], templates: seedTemplates, units: 'lbs', weeklyTarget: 4 };
+  save();
+  toast('All data cleared');
+  showTab('today');
+});
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============================================================
+   AUTH UI
+   ============================================================ */
+let authMode = 'login';
+function setAuthMode(mode) {
+  authMode = mode;
+  $('#tab-login').classList.toggle('active', mode === 'login');
+  $('#tab-signup').classList.toggle('active', mode === 'signup');
+  $('#auth-submit').textContent = mode === 'login' ? 'Sign in' : 'Create account';
+  $('#auth-pass').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+  $('#auth-error').textContent = '';
+  $('#auth-sub').textContent = mode === 'login'
+    ? 'Sign in to track your lifts. Your data stays on this device.'
+    : 'Create a quick account. No email verification — your data lives here only.';
+}
+$('#tab-login').addEventListener('click', e => { e.preventDefault(); setAuthMode('login'); });
+$('#tab-signup').addEventListener('click', e => { e.preventDefault(); setAuthMode('signup'); });
+$('#auth-form').addEventListener('submit', e => { e.preventDefault(); handleAuthSubmit(); });
+
+function handleAuthSubmit() {
+  const email = $('#auth-email').value;
+  const pass = $('#auth-pass').value;
+  const errEl = $('#auth-error');
+  errEl.textContent = '';
+  const btn = $('#auth-submit');
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = '...';
+  try {
+    if (authMode === 'signup') signup(email, pass);
+    else login(email, pass);
+    bootApp();
+    $('#auth-pass').value = '';
+  } catch (e) {
+    console.error('Auth error:', e);
+    errEl.textContent = e.message || String(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+function showAuth() {
+  $('#auth-screen').hidden = false;
+  $('#app-main').hidden = true;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  $('#ios-hint').hidden = !isIOS;
+  setAuthMode('login');
+  setTimeout(() => $('#auth-email').focus(), 50);
+}
+
+function bootApp() {
+  if (!load()) { showAuth(); return; }
+  $('#auth-screen').hidden = true;
+  $('#app-main').hidden = false;
+  $('#log-date').value = todayISO();
+  $('#quick-date').value = todayISO();
+  showTab('today');
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+if (currentUser()) {
