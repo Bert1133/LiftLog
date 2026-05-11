@@ -230,14 +230,33 @@
     background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 6px;
     font-size: 14px;
-    line-height: 1.55;
   }
-  .welcome-tip strong { color: var(--text); }
-  .welcome-tip ol { margin: 8px 0 0 0; padding-left: 22px; color: var(--muted); }
-  .welcome-tip ol li { margin-bottom: 4px; }
-  .welcome-tip ol li:last-child { margin-bottom: 0; }
+  .welcome-tip strong { color: var(--text); font-weight: 700; }
+  .install-steps {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column;
+    gap: 2px;
+  }
+  .install-steps li {
+    display: flex; align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.3;
+  }
+  .install-steps .step-num {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #1a0a00;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px;
+  }
   .streak {
     display: flex; align-items: center; gap: 8px;
     padding: 8px 14px;
@@ -894,20 +913,23 @@
         </g>
       </svg>
     </div>
-    <h2 class="welcome-title">Welcome to Lift Log</h2>
-    <p class="welcome-sub">Track your workouts. Everything stays on your device — no accounts, no servers.</p>
+    <h2 class="welcome-title">Install Lift Log</h2>
+    <p class="welcome-sub">Add it to your Home Screen so your workouts stay saved.</p>
     <div id="welcome-ios" class="welcome-tip" hidden>
-      <strong>To keep your data forever:</strong>
-      <ol>
-        <li>Tap the <strong>Share</strong> button <svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;display:inline-block;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg> at the bottom of Safari</li>
-        <li>Tap <strong>Add to Home Screen</strong></li>
-        <li>Open Lift Log from your Home Screen like a real app</li>
+      <ol class="install-steps">
+        <li><span class="step-num">1</span><span>Tap <strong>Share</strong> <svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-3px;display:inline-block;margin:0 2px;" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg> below</span></li>
+        <li><span class="step-num">2</span><span>Tap <strong>Add to Home Screen</strong></span></li>
+        <li><span class="step-num">3</span><span>Tap <strong>Add</strong></span></li>
       </ol>
     </div>
-    <div id="welcome-other" class="welcome-tip" hidden>
-      <strong>Tip:</strong> Bookmark this page or pin it to your taskbar. Your data is saved automatically — just come back to this URL anytime.
+    <div id="welcome-android" class="welcome-tip" hidden>
+      <ol class="install-steps">
+        <li><span class="step-num">1</span><span>Tap the menu <strong>⋮</strong></span></li>
+        <li><span class="step-num">2</span><span>Tap <strong>Install app</strong> or <strong>Add to Home Screen</strong></span></li>
+      </ol>
     </div>
-    <button class="btn primary" id="welcome-ok" style="width:100%; margin-top:18px;">Got it</button>
+    <button class="btn primary" id="welcome-ok" style="width:100%; margin-top:16px;">Got it</button>
+    <button class="btn ghost" id="welcome-skip" style="width:100%; margin-top:8px; background:transparent; border:0;">Skip for now</button>
   </div>
 </div>
 
@@ -1097,13 +1119,15 @@ function showWelcome() {
   if (localStorage.getItem(WELCOME_KEY)) return;
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   if (isStandalone) {
-    // Already installed — just mark welcomed and skip
     localStorage.setItem(WELCOME_KEY, '1');
     return;
   }
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const isMobile = isIOS || isAndroid;
+  if (!isMobile) return;
   $('#welcome-ios').hidden = !isIOS;
-  $('#welcome-other').hidden = isIOS;
+  $('#welcome-android').hidden = !isAndroid;
   const m = $('#welcome-modal');
   m.hidden = false;
   requestAnimationFrame(() => m.classList.add('open'));
@@ -1115,6 +1139,7 @@ function dismissWelcome() {
   localStorage.setItem(WELCOME_KEY, '1');
 }
 $('#welcome-ok').addEventListener('click', dismissWelcome);
+$('#welcome-skip').addEventListener('click', dismissWelcome);
 $('#welcome-modal .modal-backdrop').addEventListener('click', dismissWelcome);
 
 /* ============================================================
