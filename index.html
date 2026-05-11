@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Lift Log" />
 <meta name="mobile-web-app-capable" content="yes" />
-<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Lift Log","short_name":"Lift Log","start_url":".","display":"standalone","background_color":"%230a0a0b","theme_color":"%230a0a0b","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" rx=\"96\" fill=\"%230a0a0b\"/><path fill=\"%23ff6a1a\" d=\"M170 110h60v240h130v60H170z\"/></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}' />
-<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230a0a0b"/><path fill="%23ff6a1a" d="M22 14h7v30h17v7H22z"/></svg>' />
-<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="32" fill="%230a0a0b"/><path fill="%23ff6a1a" d="M60 38h22v84h48v22H60z"/></svg>' />
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Lift Log","short_name":"Lift Log","start_url":".","display":"standalone","background_color":"%230a0a0b","theme_color":"%230a0a0b","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" rx=\"112\" fill=\"%230a0a0b\"/><g fill=\"%23ff6a1a\"><rect x=\"144\" y=\"96\" width=\"64\" height=\"272\" rx=\"32\"/><rect x=\"112\" y=\"352\" width=\"288\" height=\"64\" rx=\"32\"/><rect x=\"72\" y=\"320\" width=\"32\" height=\"128\" rx=\"12\"/><rect x=\"408\" y=\"320\" width=\"32\" height=\"128\" rx=\"12\"/><rect x=\"448\" y=\"288\" width=\"32\" height=\"192\" rx=\"12\"/></g></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}' />
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="18" y="12" width="8" height="34" rx="4"/><rect x="14" y="44" width="36" height="8" rx="4"/><rect x="9" y="40" width="4" height="16" rx="1.5"/><rect x="51" y="40" width="4" height="16" rx="1.5"/><rect x="56" y="36" width="4" height="24" rx="1.5"/></g></svg>' />
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="40" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="50" y="34" width="24" height="96" rx="11"/><rect x="40" y="124" width="100" height="24" rx="11"/><rect x="25" y="113" width="11" height="46" rx="4"/><rect x="144" y="113" width="11" height="46" rx="4"/><rect x="159" y="102" width="11" height="68" rx="4"/></g></svg>' />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -86,13 +86,160 @@
     font-weight: 800; font-size: 20px; letter-spacing: -0.02em;
   }
   .logo .mark {
-    width: 34px; height: 34px; border-radius: 9px;
-    background: linear-gradient(135deg, var(--accent), #ff9a3c);
-    display: grid; place-items: center;
-    box-shadow: 0 6px 18px var(--accent-glow);
-    color: #1a0a00; font-weight: 900;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 0;
+    filter: drop-shadow(0 4px 14px var(--accent-glow));
   }
+  .logo .mark svg { display: block; }
   .logo small { color: var(--muted); font-weight: 500; margin-left: 4px; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* Header right cluster */
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .menu-btn {
+    appearance: none; background: var(--card); color: var(--text);
+    border: 1px solid var(--border);
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all .15s ease;
+    padding: 0;
+  }
+  .menu-btn:hover, .menu-btn:active { background: var(--card-2); border-color: var(--border-2); }
+  /* Hide hamburger on desktop, show top tabs */
+  @media (min-width: 761px) {
+    .menu-btn { display: none; }
+  }
+
+  /* Drawer */
+  .drawer {
+    position: fixed; inset: 0;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .drawer-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.55);
+    opacity: 0;
+    transition: opacity .25s ease;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+  .drawer-panel {
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: min(85vw, 340px);
+    background: var(--bg-2);
+    border-left: 1px solid var(--border);
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateX(100%);
+    transition: transform .26s cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex; flex-direction: column;
+    box-shadow: -12px 0 40px rgba(0,0,0,.45);
+  }
+  .drawer.open { pointer-events: auto; }
+  .drawer.open .drawer-backdrop { opacity: 1; }
+  .drawer.open .drawer-panel { transform: translateX(0); }
+  .drawer-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 18px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .drawer-head .logo { font-size: 18px; }
+  .close-btn {
+    appearance: none; background: transparent; color: var(--text);
+    border: 0; cursor: pointer;
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .close-btn:hover { background: var(--card); }
+  .drawer-tabs {
+    flex-direction: column !important;
+    flex: 1;
+    gap: 4px !important;
+    padding: 14px !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: visible !important;
+  }
+  .drawer-tabs button {
+    flex: 0 0 auto !important;
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
+    background: transparent !important;
+    color: var(--text) !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center;
+    gap: 14px;
+    justify-content: flex-start !important;
+  }
+  .drawer-tabs button svg { flex-shrink: 0; color: var(--muted); transition: color .15s; }
+  .drawer-tabs button:hover { background: var(--card) !important; }
+  .drawer-tabs button.active {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    box-shadow: none !important;
+  }
+  .drawer-tabs button.active svg { color: var(--accent); }
+  .drawer-foot {
+    padding: 14px 18px 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Welcome modal */
+  .modal {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+  .modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.6);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+  .modal-card {
+    position: relative;
+    width: 100%; max-width: 380px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px 22px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+    transform: scale(.96) translateY(8px);
+    opacity: 0;
+    transition: all .22s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .modal.open .modal-card { transform: none; opacity: 1; }
+  .welcome-icon {
+    display: flex; justify-content: center;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 8px 22px var(--accent-glow));
+  }
+  .welcome-title { margin: 14px 0 6px; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; text-align: center; }
+  .welcome-sub { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.5; text-align: center; }
+  .welcome-tip {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .welcome-tip strong { color: var(--text); }
+  .welcome-tip ol { margin: 8px 0 0 0; padding-left: 22px; color: var(--muted); }
+  .welcome-tip ol li { margin-bottom: 4px; }
+  .welcome-tip ol li:last-child { margin-bottom: 0; }
   .streak {
     display: flex; align-items: center; gap: 8px;
     padding: 8px 14px;
@@ -385,7 +532,7 @@
       padding-top: calc(18px + env(safe-area-inset-top));
       padding-left: calc(16px + env(safe-area-inset-left));
       padding-right: calc(16px + env(safe-area-inset-right));
-      padding-bottom: calc(100px + env(safe-area-inset-bottom));
+      padding-bottom: calc(28px + env(safe-area-inset-bottom));
     }
     header.brand {
       gap: 10px;
@@ -397,39 +544,8 @@
     .streak { padding: 9px 14px; font-size: 14px; }
     .streak strong { font-size: 15px; }
 
-    /* Top tabs become a sticky bottom tab bar */
-    nav.tabs {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      margin: 0;
-      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-      border-radius: 0;
-      border: 0;
-      border-top: 1px solid var(--border);
-      background: rgba(16,16,20,.92);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      z-index: 50;
-      gap: 2px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    nav.tabs button {
-      flex: 1 1 auto;
-      min-width: 64px;
-      padding: 10px 6px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: -0.005em;
-      border-radius: 10px;
-    }
-    nav.tabs button.active {
-      color: var(--accent);
-      background: var(--accent-soft);
-      box-shadow: none;
-    }
+    /* Hide top tabs on mobile — drawer takes over */
+    nav.top-tabs { display: none; }
 
     .card { padding: 18px; border-radius: 16px; }
     .card + .card { margin-top: 14px; }
@@ -479,7 +595,7 @@
 
     .toast {
       left: 14px; right: 14px; transform: none;
-      bottom: calc(100px + env(safe-area-inset-bottom));
+      bottom: calc(20px + env(safe-area-inset-bottom));
       width: auto; text-align: center;
       font-size: 15px; padding: 12px 18px;
     }
@@ -500,16 +616,34 @@
 
   <header class="brand">
     <div class="logo">
-      <div class="mark">L</div>
-      <div>Lift Log</div>
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="14" fill="#0a0a0b"/>
+          <g fill="#ff6a1a">
+            <rect x="18" y="12" width="8" height="34" rx="4"/>
+            <rect x="14" y="44" width="36" height="8" rx="4"/>
+            <rect x="9" y="40" width="4" height="16" rx="1.5"/>
+            <rect x="51" y="40" width="4" height="16" rx="1.5"/>
+            <rect x="56" y="36" width="4" height="24" rx="1.5"/>
+          </g>
+        </svg>
+      </span>
+      <span class="wordmark">Lift Log</span>
     </div>
-    <div class="streak" title="Weekly target — change in Settings">
-      <span class="dot"></span>
-      <span><strong id="goal-current">0</strong> / <strong id="goal-target">4</strong> this week</span>
+    <div class="header-right">
+      <div class="streak" title="Weekly target — change in Settings">
+        <span class="dot"></span>
+        <span><strong id="goal-current">0</strong> / <strong id="goal-target">4</strong></span>
+      </div>
+      <button id="menu-btn" class="menu-btn" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+        </svg>
+      </button>
     </div>
   </header>
 
-  <nav class="tabs" role="tablist">
+  <nav class="tabs top-tabs" role="tablist">
     <button data-tab="today" class="active">Today</button>
     <button data-tab="quick">Quick log</button>
     <button data-tab="log">Log workout</button>
@@ -687,6 +821,97 @@
 
 </div>
 
+<!-- Drawer (slide-in menu) -->
+<div id="drawer" class="drawer" hidden aria-hidden="true">
+  <div class="drawer-backdrop" data-close></div>
+  <aside class="drawer-panel" role="dialog" aria-label="Menu">
+    <div class="drawer-head">
+      <div class="logo">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+            <rect width="64" height="64" rx="14" fill="#0a0a0b"/>
+            <g fill="#ff6a1a">
+              <rect x="18" y="12" width="8" height="34" rx="4"/>
+              <rect x="14" y="44" width="36" height="8" rx="4"/>
+              <rect x="9" y="40" width="4" height="16" rx="1.5"/>
+              <rect x="51" y="40" width="4" height="16" rx="1.5"/>
+              <rect x="56" y="36" width="4" height="24" rx="1.5"/>
+            </g>
+          </svg>
+        </span>
+        <span class="wordmark">Lift Log</span>
+      </div>
+      <button class="close-btn" data-close aria-label="Close menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="tabs drawer-tabs" role="tablist">
+      <button data-tab="today" class="active">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+        <span>Today</span>
+      </button>
+      <button data-tab="quick">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
+        <span>Quick log</span>
+      </button>
+      <button data-tab="log">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4v16h16v-7"/><path d="M18 2l4 4-11 11H7v-4z"/></svg>
+        <span>Log workout</span>
+      </button>
+      <button data-tab="templates">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Templates</span>
+      </button>
+      <button data-tab="progress">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+        <span>Progress</span>
+      </button>
+      <button data-tab="settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.7l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.7-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.7.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 15 1.6 1.6 0 0 0 3.1 14H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 9 4.6 1.6 1.6 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1A1.6 1.6 0 0 0 15 4.6a1.6 1.6 0 0 0 1.7-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.7V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+    <div class="drawer-foot">
+      <div class="muted" style="font-size:12px; line-height:1.5;">Saved to this device. Add to Home Screen on iPhone for permanent storage.</div>
+    </div>
+  </aside>
+</div>
+
+<!-- Welcome modal -->
+<div id="welcome-modal" class="modal" hidden>
+  <div class="modal-backdrop"></div>
+  <div class="modal-card">
+    <div class="welcome-icon">
+      <svg viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+        <rect width="64" height="64" rx="14" fill="#0a0a0b"/>
+        <g fill="#ff6a1a">
+          <rect x="18" y="12" width="8" height="34" rx="4"/>
+          <rect x="14" y="44" width="36" height="8" rx="4"/>
+          <rect x="9" y="40" width="4" height="16" rx="1.5"/>
+          <rect x="51" y="40" width="4" height="16" rx="1.5"/>
+          <rect x="56" y="36" width="4" height="24" rx="1.5"/>
+        </g>
+      </svg>
+    </div>
+    <h2 class="welcome-title">Welcome to Lift Log</h2>
+    <p class="welcome-sub">Track your workouts. Everything stays on your device — no accounts, no servers.</p>
+    <div id="welcome-ios" class="welcome-tip" hidden>
+      <strong>To keep your data forever:</strong>
+      <ol>
+        <li>Tap the <strong>Share</strong> button <svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;display:inline-block;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg> at the bottom of Safari</li>
+        <li>Tap <strong>Add to Home Screen</strong></li>
+        <li>Open Lift Log from your Home Screen like a real app</li>
+      </ol>
+    </div>
+    <div id="welcome-other" class="welcome-tip" hidden>
+      <strong>Tip:</strong> Bookmark this page or pin it to your taskbar. Your data is saved automatically — just come back to this URL anytime.
+    </div>
+    <button class="btn primary" id="welcome-ok" style="width:100%; margin-top:18px;">Got it</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -838,7 +1063,58 @@ function showTab(tab) {
   if (tab === 'progress') renderProgress();
   if (tab === 'settings') renderSettings();
 }
-$$('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+$$('nav.tabs button').forEach(b => b.addEventListener('click', () => {
+  showTab(b.dataset.tab);
+  closeDrawer();
+}));
+
+/* ============================================================
+   DRAWER (hamburger menu)
+   ============================================================ */
+function openDrawer() {
+  const d = $('#drawer');
+  d.hidden = false;
+  d.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => d.classList.add('open'));
+}
+function closeDrawer() {
+  const d = $('#drawer');
+  if (!d || d.hidden) return;
+  d.classList.remove('open');
+  d.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  setTimeout(() => { if (!d.classList.contains('open')) d.hidden = true; }, 260);
+}
+$('#menu-btn').addEventListener('click', openDrawer);
+$$('[data-close]', $('#drawer')).forEach(el => el.addEventListener('click', closeDrawer));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+/* ============================================================
+   WELCOME MODAL (first run)
+   ============================================================ */
+const WELCOME_KEY = 'liftlog.welcomed.v1';
+function showWelcome() {
+  if (localStorage.getItem(WELCOME_KEY)) return;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone) {
+    // Already installed — just mark welcomed and skip
+    localStorage.setItem(WELCOME_KEY, '1');
+    return;
+  }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  $('#welcome-ios').hidden = !isIOS;
+  $('#welcome-other').hidden = isIOS;
+  const m = $('#welcome-modal');
+  m.hidden = false;
+  requestAnimationFrame(() => m.classList.add('open'));
+}
+$('#welcome-ok').addEventListener('click', () => {
+  const m = $('#welcome-modal');
+  m.classList.remove('open');
+  setTimeout(() => m.hidden = true, 220);
+  localStorage.setItem(WELCOME_KEY, '1');
+});
 
 /* ============================================================
    TODAY VIEW
@@ -1366,7 +1642,7 @@ load();
 const _ld = $('#log-date'); if (_ld) _ld.value = todayISO();
 const _qd = $('#quick-date'); if (_qd) _qd.value = todayISO();
 showTab('today');
+showWelcome();
 </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
