@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Lift Log" />
 <meta name="mobile-web-app-capable" content="yes" />
-<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Lift Log","short_name":"Lift Log","start_url":".","display":"standalone","background_color":"%230a0a0b","theme_color":"%230a0a0b","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" rx=\"112\" fill=\"%230a0a0b\"/><g fill=\"%23ff6a1a\"><rect x=\"144\" y=\"96\" width=\"64\" height=\"272\" rx=\"32\"/><rect x=\"112\" y=\"352\" width=\"288\" height=\"64\" rx=\"32\"/><rect x=\"72\" y=\"320\" width=\"32\" height=\"128\" rx=\"12\"/><rect x=\"408\" y=\"320\" width=\"32\" height=\"128\" rx=\"12\"/><rect x=\"448\" y=\"288\" width=\"32\" height=\"192\" rx=\"12\"/></g></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}' />
-<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="18" y="12" width="8" height="34" rx="4"/><rect x="14" y="44" width="36" height="8" rx="4"/><rect x="9" y="40" width="4" height="16" rx="1.5"/><rect x="51" y="40" width="4" height="16" rx="1.5"/><rect x="56" y="36" width="4" height="24" rx="1.5"/></g></svg>' />
-<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="40" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="50" y="34" width="24" height="96" rx="11"/><rect x="40" y="124" width="100" height="24" rx="11"/><rect x="25" y="113" width="11" height="46" rx="4"/><rect x="144" y="113" width="11" height="46" rx="4"/><rect x="159" y="102" width="11" height="68" rx="4"/></g></svg>' />
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Lift Log","short_name":"Lift Log","start_url":".","display":"standalone","background_color":"%230a0a0b","theme_color":"%230a0a0b","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" rx=\"112\" fill=\"%230a0a0b\"/><g fill=\"%23ff6a1a\"><rect x=\"40\" y=\"264\" width=\"32\" height=\"112\" rx=\"12\"/><rect x=\"88\" y=\"232\" width=\"40\" height=\"176\" rx=\"16\"/><rect x=\"184\" y=\"80\" width=\"72\" height=\"288\" rx=\"16\"/><rect x=\"184\" y=\"304\" width=\"128\" height=\"72\" rx=\"16\"/><rect x=\"384\" y=\"232\" width=\"40\" height=\"176\" rx=\"16\"/><rect x=\"440\" y=\"264\" width=\"32\" height=\"112\" rx=\"12\"/></g></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}' />
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="5" y="33" width="4" height="14" rx="1.5"/><rect x="11" y="29" width="5" height="22" rx="2"/><rect x="23" y="10" width="9" height="36" rx="2"/><rect x="23" y="38" width="16" height="9" rx="2"/><rect x="48" y="29" width="5" height="22" rx="2"/><rect x="55" y="33" width="4" height="14" rx="1.5"/></g></svg>' />
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="40" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="14" y="93" width="11" height="39" rx="4"/><rect x="31" y="82" width="14" height="62" rx="5"/><rect x="65" y="28" width="25" height="101" rx="6"/><rect x="65" y="107" width="45" height="25" rx="6"/><rect x="135" y="82" width="14" height="62" rx="5"/><rect x="155" y="93" width="11" height="39" rx="4"/></g></svg>' />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -122,8 +122,6 @@
     background: rgba(0,0,0,.55);
     opacity: 0;
     transition: opacity .25s ease;
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
   }
   .drawer-panel {
     position: absolute; top: 0; right: 0; bottom: 0;
@@ -196,6 +194,7 @@
   }
 
   /* Welcome modal */
+  .modal[hidden] { display: none !important; }
   .modal {
     position: fixed; inset: 0; z-index: 200;
     display: flex; align-items: center; justify-content: center;
@@ -204,9 +203,8 @@
   }
   .modal-backdrop {
     position: absolute; inset: 0;
-    background: rgba(0,0,0,.6);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    background: rgba(0,0,0,.7);
+    cursor: pointer;
   }
   .modal-card {
     position: relative;
@@ -620,11 +618,12 @@
         <svg viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
           <rect width="64" height="64" rx="14" fill="#0a0a0b"/>
           <g fill="#ff6a1a">
-            <rect x="18" y="12" width="8" height="34" rx="4"/>
-            <rect x="14" y="44" width="36" height="8" rx="4"/>
-            <rect x="9" y="40" width="4" height="16" rx="1.5"/>
-            <rect x="51" y="40" width="4" height="16" rx="1.5"/>
-            <rect x="56" y="36" width="4" height="24" rx="1.5"/>
+            <rect x="5" y="33" width="4" height="14" rx="1.5"/>
+            <rect x="11" y="29" width="5" height="22" rx="2"/>
+            <rect x="23" y="10" width="9" height="36" rx="2"/>
+            <rect x="23" y="38" width="16" height="9" rx="2"/>
+            <rect x="48" y="29" width="5" height="22" rx="2"/>
+            <rect x="55" y="33" width="4" height="14" rx="1.5"/>
           </g>
         </svg>
       </span>
@@ -1109,12 +1108,14 @@ function showWelcome() {
   m.hidden = false;
   requestAnimationFrame(() => m.classList.add('open'));
 }
-$('#welcome-ok').addEventListener('click', () => {
+function dismissWelcome() {
   const m = $('#welcome-modal');
   m.classList.remove('open');
   setTimeout(() => m.hidden = true, 220);
   localStorage.setItem(WELCOME_KEY, '1');
-});
+}
+$('#welcome-ok').addEventListener('click', dismissWelcome);
+$('#welcome-modal .modal-backdrop').addEventListener('click', dismissWelcome);
 
 /* ============================================================
    TODAY VIEW
