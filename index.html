@@ -193,6 +193,54 @@
     border-top: 1px solid var(--border);
   }
 
+  /* Exercise picker results */
+  .ex-result {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text);
+    transition: all .12s ease;
+  }
+  .ex-result:hover { background: var(--card-2); border-color: var(--border-2); }
+  .ex-result .ex-name { font-weight: 600; }
+  .ex-result .ex-meta { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 8px; background: var(--card); border-radius: 6px; font-weight: 700; }
+  .ex-result.cardio .ex-meta { color: var(--accent); }
+
+  /* Cardio fields */
+  .cardio-fields {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; margin-top: 10px;
+  }
+  .cardio-field {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+  }
+  .cardio-field .cf-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); font-weight: 700;
+  }
+  .cardio-field .cf-row { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
+  .cardio-field input {
+    background: transparent; border: 0; padding: 4px 0;
+    font-size: 18px; font-weight: 700; color: var(--text);
+    width: 100%;
+  }
+  .cardio-field .cf-unit { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .ex-type-pill {
+    display: inline-flex; align-items: center;
+    font-size: 10px; padding: 3px 8px; border-radius: 5px;
+    background: var(--accent-soft); color: var(--accent);
+    font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    margin-left: 8px;
+  }
+
   /* Welcome modal */
   .modal[hidden] { display: none !important; }
   .modal {
@@ -902,6 +950,34 @@
   </aside>
 </div>
 
+<!-- Exercise picker modal -->
+<div id="exercise-picker" class="modal" hidden>
+  <div class="modal-backdrop" data-picker-close></div>
+  <div class="modal-card" style="max-width:440px; padding:18px;">
+    <h2 style="margin:0 0 12px; font-size:18px; font-weight:800;">Add exercise</h2>
+    <input id="ex-search" type="text" placeholder="Search exercises..." autocomplete="off" autocorrect="off" autocapitalize="words" />
+    <div id="ex-results" style="max-height:340px; overflow-y:auto; margin-top:12px;"></div>
+    <div id="ex-custom" hidden style="margin-top:10px;">
+      <p class="muted" style="font-size:13px; margin:0 0 8px;">Not in our list. Add "<span id="ex-custom-name" style="color:var(--text); font-weight:600;"></span>" as:</p>
+      <div class="hstack" style="gap:8px;">
+        <button class="btn primary sm" id="ex-add-strength">Strength</button>
+        <select id="ex-cardio-type">
+          <option value="treadmill">Treadmill</option>
+          <option value="stairs">Stair master</option>
+          <option value="bike">Bike</option>
+          <option value="rower">Rower</option>
+          <option value="elliptical">Elliptical</option>
+          <option value="generic">Other cardio</option>
+        </select>
+        <button class="btn primary sm" id="ex-add-cardio">Cardio</button>
+      </div>
+    </div>
+    <div class="hstack" style="margin-top:14px; justify-content:flex-end;">
+      <button class="btn ghost" data-picker-close>Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Welcome modal -->
 <div id="welcome-modal" class="modal" hidden>
   <div class="modal-backdrop"></div>
@@ -945,6 +1021,81 @@
    STATE & STORAGE
    ============================================================ */
 const STORAGE_KEY = 'liftlog.v2';
+
+/* ---------- Exercise database (built-in) ---------- */
+const CARDIO_FIELDS = {
+  treadmill:  [{k:'time',l:'Time',u:'min',s:0.5},{k:'distance',l:'Distance',u:'mi',s:0.1},{k:'speed',l:'Speed',u:'mph',s:0.1},{k:'incline',l:'Incline',u:'%',s:0.5}],
+  stairs:     [{k:'time',l:'Time',u:'min',s:1},{k:'level',l:'Level',u:'',s:1},{k:'floors',l:'Floors',u:'',s:1}],
+  bike:       [{k:'time',l:'Time',u:'min',s:0.5},{k:'distance',l:'Distance',u:'mi',s:0.1},{k:'resistance',l:'Resistance',u:'',s:1}],
+  rower:      [{k:'time',l:'Time',u:'min',s:0.5},{k:'distance',l:'Distance',u:'m',s:50},{k:'pace',l:'Pace/500m',u:'',s:1}],
+  elliptical: [{k:'time',l:'Time',u:'min',s:0.5},{k:'level',l:'Level',u:'',s:1},{k:'resistance',l:'Resistance',u:'',s:1}],
+  generic:    [{k:'time',l:'Time',u:'min',s:0.5},{k:'distance',l:'Distance',u:'mi',s:0.1},{k:'calories',l:'Calories',u:'kcal',s:10}],
+};
+const CARDIO_TYPE_LABELS = { treadmill:'Treadmill', stairs:'Stair Master', bike:'Bike', rower:'Rower', elliptical:'Elliptical', generic:'Other cardio' };
+
+const EXERCISE_DB = [
+  // ---- Chest ----
+  {n:'Bench Press',m:'Chest'},{n:'Incline Bench Press',m:'Chest'},{n:'Decline Bench Press',m:'Chest'},
+  {n:'Dumbbell Bench Press',m:'Chest'},{n:'Incline Dumbbell Press',m:'Chest'},
+  {n:'Incline Machine Bench Press',m:'Chest'},{n:'Machine Chest Press',m:'Chest'},
+  {n:'Pec Deck',m:'Chest'},{n:'Cable Fly',m:'Chest'},{n:'Dumbbell Fly',m:'Chest'},
+  {n:'Push-up',m:'Chest'},{n:'Dips',m:'Chest'},{n:'Cable Crossover',m:'Chest'},
+  // ---- Back ----
+  {n:'Deadlift',m:'Back'},{n:'Romanian Deadlift',m:'Back'},{n:'Pull-up',m:'Back'},{n:'Chin-up',m:'Back'},
+  {n:'Lat Pulldown',m:'Back'},{n:'Wide-grip Pulldown',m:'Back'},{n:'Close-grip Pulldown',m:'Back'},
+  {n:'Barbell Row',m:'Back'},{n:'Dumbbell Row',m:'Back'},{n:'T-Bar Row',m:'Back'},{n:'Cable Row',m:'Back'},
+  {n:'Seated Cable Row',m:'Back'},{n:'Machine Row',m:'Back'},{n:'Face Pull',m:'Back'},
+  {n:'Reverse Pec Deck',m:'Back'},{n:'Shrugs',m:'Back'},{n:'Hyperextension',m:'Back'},
+  // ---- Shoulders ----
+  {n:'Overhead Press',m:'Shoulders'},{n:'Military Press',m:'Shoulders'},
+  {n:'Dumbbell Shoulder Press',m:'Shoulders'},{n:'Arnold Press',m:'Shoulders'},
+  {n:'Machine Shoulder Press',m:'Shoulders'},{n:'Lateral Raise',m:'Shoulders'},
+  {n:'Cable Lateral Raise',m:'Shoulders'},{n:'Front Raise',m:'Shoulders'},
+  {n:'Rear Delt Fly',m:'Shoulders'},{n:'Upright Row',m:'Shoulders'},
+  // ---- Biceps ----
+  {n:'Bicep Curl',m:'Biceps'},{n:'Barbell Curl',m:'Biceps'},{n:'Dumbbell Curl',m:'Biceps'},
+  {n:'Hammer Curl',m:'Biceps'},{n:'Preacher Curl',m:'Biceps'},{n:'DB Preacher Curl',m:'Biceps'},
+  {n:'Cable Curl',m:'Biceps'},{n:'Incline Dumbbell Curl',m:'Biceps'},
+  {n:'Concentration Curl',m:'Biceps'},{n:'EZ-Bar Curl',m:'Biceps'},
+  // ---- Triceps ----
+  {n:'Tricep Pushdown',m:'Triceps'},{n:'Cable Tricep Pushdown',m:'Triceps'},
+  {n:'Tricep Pushdown / Dips',m:'Triceps'},{n:'Overhead Tricep Extension',m:'Triceps'},
+  {n:'Skullcrushers',m:'Triceps'},{n:'JM Press',m:'Triceps'},{n:'Close-grip Bench Press',m:'Triceps'},
+  {n:'Tricep Dips',m:'Triceps'},{n:'Tricep Kickback',m:'Triceps'},{n:'Diamond Push-up',m:'Triceps'},
+  // ---- Legs ----
+  {n:'Back Squat',m:'Legs'},{n:'Front Squat',m:'Legs'},{n:'Hack Squat',m:'Legs'},
+  {n:'Goblet Squat',m:'Legs'},{n:'Bulgarian Split Squat',m:'Legs'},{n:'Lunges',m:'Legs'},
+  {n:'Walking Lunges',m:'Legs'},{n:'Leg Press',m:'Legs'},{n:'Leg Extension',m:'Legs'},
+  {n:'Leg Curl',m:'Legs'},{n:'Seated Leg Curl',m:'Legs'},{n:'Lying Leg Curl',m:'Legs'},
+  {n:'Adductor Machine',m:'Legs'},{n:'Abductor Machine',m:'Legs'},
+  {n:'Standing Calf Raise',m:'Legs'},{n:'Seated Calf Raise',m:'Legs'},
+  {n:'Leg Press Calf Raises',m:'Legs'},{n:'Step-up',m:'Legs'},{n:'Glute Bridge',m:'Legs'},
+  {n:'Hip Thrust',m:'Legs'},{n:'Good Morning',m:'Legs'},
+  // ---- Core ----
+  {n:'Plank',m:'Core'},{n:'Side Plank',m:'Core'},{n:'Sit-up',m:'Core'},{n:'Crunch',m:'Core'},
+  {n:'Cable Crunch',m:'Core'},{n:'Abs Machine',m:'Core'},{n:'Hanging Leg Raise',m:'Core'},
+  {n:'Russian Twist',m:'Core'},{n:'Mountain Climber',m:'Core'},{n:'Ab Wheel',m:'Core'},
+  {n:'Wood Chopper',m:'Core'},{n:'Pallof Press',m:'Core'},
+  // ---- Cardio ----
+  {n:'Treadmill',m:'Cardio',c:'treadmill'},{n:'Stair Master',m:'Cardio',c:'stairs'},
+  {n:'Stair Climber',m:'Cardio',c:'stairs'},{n:'Stationary Bike',m:'Cardio',c:'bike'},
+  {n:'Spin Bike',m:'Cardio',c:'bike'},{n:'Assault Bike',m:'Cardio',c:'bike'},
+  {n:'Rowing Machine',m:'Cardio',c:'rower'},{n:'Elliptical',m:'Cardio',c:'elliptical'},
+  {n:'Running (outdoor)',m:'Cardio',c:'generic'},{n:'Cycling (outdoor)',m:'Cardio',c:'generic'},
+  {n:'Walking',m:'Cardio',c:'generic'},{n:'Jump Rope',m:'Cardio',c:'generic'},
+  {n:'Swimming',m:'Cardio',c:'generic'},{n:'Hiking',m:'Cardio',c:'generic'},
+  {n:'Jogging',m:'Cardio',c:'generic'},
+].map(e => ({ name: e.n, muscle: e.m, type: e.c ? 'cardio' : 'strength', cardioType: e.c || null }));
+
+function findExercise(name) {
+  const lower = (name||'').toLowerCase().trim();
+  return EXERCISE_DB.find(e => e.name.toLowerCase() === lower);
+}
+function searchExercises(query, limit = 12) {
+  const q = (query||'').toLowerCase().trim();
+  if (!q) return EXERCISE_DB.slice(0, limit);
+  return EXERCISE_DB.filter(e => e.name.toLowerCase().includes(q)).slice(0, limit);
+}
 
 const DEFAULT_TEMPLATES = [
   { id: 't_upper', name: 'UPPER', exercises: [
@@ -1129,7 +1280,7 @@ function openInstallModal() {
   const android = isAndroidDevice();
   $('#welcome-ios').hidden = !iOS;
   $('#welcome-android').hidden = !android;
-  if (!iOS && !android) $('#welcome-ios').hidden = false;
+  if (!iOS && !android) $('#welcome-ios').hidden = false; // desktop fallback
   const m = $('#welcome-modal');
   m.hidden = false;
   requestAnimationFrame(() => m.classList.add('open'));
@@ -1138,7 +1289,7 @@ function openInstallModal() {
 function showWelcome() {
   if (localStorage.getItem(WELCOME_KEY)) return;
   if (isStandalone()) { localStorage.setItem(WELCOME_KEY, '1'); return; }
-  if (!isIOSDevice() && !isAndroidDevice()) return;
+  if (!isIOSDevice() && !isAndroidDevice()) return; // mobile only auto-show
   openInstallModal();
 }
 function dismissWelcome() {
@@ -1151,6 +1302,7 @@ $('#welcome-ok').addEventListener('click', dismissWelcome);
 $('#welcome-skip').addEventListener('click', dismissWelcome);
 $('#welcome-modal .modal-backdrop').addEventListener('click', dismissWelcome);
 
+// Install button in drawer — visible only when not already a PWA
 if (!isStandalone()) {
   $('#install-btn').hidden = false;
 }
@@ -1168,7 +1320,9 @@ function renderToday() {
   const weekAgo = daysAgo(7);
   const weekWorkouts = state.workouts.filter(w => w.date >= weekAgo);
   const volume = weekWorkouts.reduce((sum, w) =>
-    w.freeform ? sum : sum + w.exercises.reduce((s, ex) => s + ex.sets.reduce((ss, st) => ss + (+st.weight||0) * (+st.reps||0), 0), 0)
+    w.freeform ? sum : sum + w.exercises.reduce((s, ex) =>
+      ex.type === 'cardio' ? s : s + (ex.sets||[]).reduce((ss, st) => ss + (+st.weight||0) * (+st.reps||0), 0)
+    , 0)
   , 0);
   const exerciseNames = new Set(
     state.workouts.filter(w => !w.freeform).flatMap(w => w.exercises.map(e => e.name))
@@ -1228,13 +1382,32 @@ function renderWorkoutItem(w) {
       </header>
       <ul>
         ${w.exercises.map(ex => `
-          <li><b>${escapeHtml(ex.name)}</b><span>${summarizeSets(ex.sets)}</span></li>
+          <li><b>${escapeHtml(ex.name)}</b><span>${summarizeExercise(ex)}</span></li>
         `).join('')}
       </ul>
     </div>`;
 }
 
-function totalSets(w) { return w.exercises.reduce((s, e) => s + e.sets.length, 0); }
+function totalSets(w) {
+  return w.exercises.reduce((s, e) => s + (e.type === 'cardio' ? 1 : (e.sets||[]).length), 0);
+}
+function summarizeExercise(ex) {
+  if (ex.type === 'cardio') {
+    const c = ex.cardio || {};
+    const parts = [];
+    if (c.time != null) parts.push(`${c.time} min`);
+    if (c.distance != null) parts.push(`${c.distance} ${ex.cardioType === 'rower' ? 'm' : 'mi'}`);
+    if (c.speed != null) parts.push(`${c.speed} mph`);
+    if (c.incline != null) parts.push(`${c.incline}% incline`);
+    if (c.level != null) parts.push(`Lv ${c.level}`);
+    if (c.floors != null) parts.push(`${c.floors} floors`);
+    if (c.resistance != null) parts.push(`Res ${c.resistance}`);
+    if (c.pace != null) parts.push(`${c.pace}/500m`);
+    if (c.calories != null) parts.push(`${c.calories} cal`);
+    return parts.join(' · ') || '—';
+  }
+  return summarizeSets(ex.sets || []);
+}
 function summarizeSets(sets) {
   if (!sets.length) return '—';
   const tops = sets.reduce((m, s) => (+s.weight > (+m.weight||0) ? s : m), sets[0]);
@@ -1317,20 +1490,103 @@ $('#log-template').addEventListener('change', e => {
     e.target.value = '';
     return;
   }
-  logDraft.exercises = t.exercises.map(ex => ({
-    id: uid(),
-    name: ex.name,
-    sets: Array.from({length: ex.sets || 3}, () => ({ weight: '', reps: '' }))
-  }));
+  logDraft.exercises = t.exercises.map(ex => makeLogExFromTemplate(ex));
   renderLogExercises();
   e.target.value = '';
 });
 
+function makeLogExFromTemplate(ex) {
+  // Look up known type if not stored on template
+  const known = ex.type ? ex : (findExercise(ex.name) || {});
+  const type = ex.type || known.type || 'strength';
+  const cardioType = ex.cardioType || known.cardioType || null;
+  if (type === 'cardio') {
+    return { id: uid(), name: ex.name, type: 'cardio', cardioType: cardioType || 'generic', cardio: {} };
+  }
+  return {
+    id: uid(),
+    name: ex.name,
+    type: 'strength',
+    sets: Array.from({length: ex.sets || 3}, () => ({ weight: '', reps: '' }))
+  };
+}
+
 $('#add-exercise').addEventListener('click', () => {
-  const name = prompt('Exercise name:');
+  openExercisePicker(picked => {
+    const newEx = {
+      id: uid(),
+      name: picked.name,
+      type: picked.type,
+    };
+    if (picked.type === 'cardio') {
+      newEx.cardioType = picked.cardioType;
+      newEx.cardio = {};
+    } else {
+      newEx.sets = [{weight:'', reps:''}];
+    }
+    logDraft.exercises.push(newEx);
+    renderLogExercises();
+  });
+});
+
+/* ============================================================
+   EXERCISE PICKER
+   ============================================================ */
+let exercisePickerCallback = null;
+function openExercisePicker(onPick) {
+  exercisePickerCallback = onPick;
+  $('#ex-search').value = '';
+  $('#ex-custom').hidden = true;
+  renderExResults('');
+  const m = $('#exercise-picker');
+  m.hidden = false;
+  requestAnimationFrame(() => m.classList.add('open'));
+  setTimeout(() => $('#ex-search').focus(), 80);
+}
+function closeExercisePicker() {
+  const m = $('#exercise-picker');
+  m.classList.remove('open');
+  setTimeout(() => m.hidden = true, 220);
+  exercisePickerCallback = null;
+}
+function pickExercise(ex) {
+  if (exercisePickerCallback) exercisePickerCallback(ex);
+  closeExercisePicker();
+}
+function renderExResults(query) {
+  const root = $('#ex-results');
+  const results = searchExercises(query);
+  root.innerHTML = results.map(e => `
+    <div class="ex-result ${e.type}" data-pick="${escapeHtml(e.name)}">
+      <div>
+        <div class="ex-name">${escapeHtml(e.name)}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">${escapeHtml(e.muscle)}</div>
+      </div>
+      <div class="ex-meta">${e.type === 'cardio' ? 'Cardio' : 'Strength'}</div>
+    </div>
+  `).join('');
+  $$('[data-pick]', root).forEach(el => el.addEventListener('click', () => {
+    const found = findExercise(el.dataset.pick);
+    if (found) pickExercise(found);
+  }));
+  // Show "add custom" section if there's typed text and no exact match
+  const exact = findExercise(query);
+  const showCustom = query.trim().length >= 2 && !exact;
+  $('#ex-custom').hidden = !showCustom;
+  if (showCustom) $('#ex-custom-name').textContent = query.trim();
+}
+$('#ex-search').addEventListener('input', e => renderExResults(e.target.value));
+$$('[data-picker-close]').forEach(el => el.addEventListener('click', closeExercisePicker));
+$('#ex-add-strength').addEventListener('click', () => {
+  const name = $('#ex-search').value.trim();
   if (!name) return;
-  logDraft.exercises.push({ id: uid(), name: name.trim(), sets: [{weight:'', reps:''}] });
-  renderLogExercises();
+  pickExercise({ name, type: 'strength', muscle: 'Custom', cardioType: null });
+});
+$('#ex-add-cardio').addEventListener('click', () => {
+  const name = $('#ex-search').value.trim();
+  if (!name) return;
+  const ct = $('#ex-cardio-type').value;
+  pickExercise({ name, type: 'cardio', muscle: 'Cardio', cardioType: ct });
 });
 
 $('#cancel-workout').addEventListener('click', () => {
@@ -1342,12 +1598,21 @@ $('#cancel-workout').addEventListener('click', () => {
 
 $('#save-workout').addEventListener('click', () => {
   if (!logDraft.exercises.length) { toast('Add at least one exercise'); return; }
-  // strip empty sets
-  const cleaned = logDraft.exercises.map(ex => ({
-    name: ex.name,
-    sets: ex.sets.filter(s => s.weight !== '' && s.reps !== '').map(s => ({ weight: +s.weight, reps: +s.reps }))
-  })).filter(ex => ex.sets.length);
-  if (!cleaned.length) { toast('Fill in at least one set'); return; }
+  const cleaned = logDraft.exercises.map(ex => {
+    if (ex.type === 'cardio') {
+      // Keep only filled cardio fields
+      const filled = {};
+      for (const k of Object.keys(ex.cardio || {})) {
+        if (ex.cardio[k] !== '' && ex.cardio[k] != null) filled[k] = +ex.cardio[k];
+      }
+      if (!Object.keys(filled).length) return null;
+      return { name: ex.name, type: 'cardio', cardioType: ex.cardioType, cardio: filled };
+    }
+    const sets = (ex.sets||[]).filter(s => s.weight !== '' && s.reps !== '').map(s => ({ weight: +s.weight, reps: +s.reps }));
+    if (!sets.length) return null;
+    return { name: ex.name, type: 'strength', sets };
+  }).filter(Boolean);
+  if (!cleaned.length) { toast('Fill in at least one value'); return; }
   state.workouts.push({ id: uid(), date: logDraft.date, exercises: cleaned });
   save();
   logDraft = { date: todayISO(), exercises: [] };
@@ -1364,11 +1629,12 @@ function renderLogExercises() {
   root.innerHTML = logDraft.exercises.map((ex, ei) => {
     const isFirst = ei === 0;
     const isLast = ei === logDraft.exercises.length - 1;
-    return `
-    <div class="exercise-block" data-ex="${ei}">
+    const isCardio = ex.type === 'cardio';
+    const head = `
       <div class="ex-head">
         <div class="ex-name">
           ${escapeHtml(ex.name)}
+          ${isCardio ? `<span class="ex-type-pill">${escapeHtml(CARDIO_TYPE_LABELS[ex.cardioType] || 'Cardio')}</span>` : ''}
         </div>
         <div class="hstack" style="gap:4px;">
           <button class="btn sm ghost icon" data-ex-up="${ei}" ${isFirst ? 'disabled' : ''} aria-label="Move up">
@@ -1379,23 +1645,52 @@ function renderLogExercises() {
           </button>
           <button class="btn sm ghost" data-rm-ex="${ei}">Remove</button>
         </div>
-      </div>
-      <div class="sets">
-        ${ex.sets.map((s, si) => `
-          <div class="set-row">
-            <div class="idx">${si + 1}</div>
-            <input type="number" inputmode="decimal" placeholder="Weight (${state.units})" value="${s.weight}" data-set="${ei}.${si}.weight" />
-            <input type="number" inputmode="numeric" placeholder="Reps" value="${s.reps}" data-set="${ei}.${si}.reps" />
-            <button class="btn sm ghost icon" data-rm-set="${ei}.${si}" aria-label="Remove set">×</button>
-          </div>
-        `).join('')}
-      </div>
-      <div class="hstack" style="margin-top: 10px;">
-        <button class="btn sm" data-add-set="${ei}">+ Add set</button>
-        ${ex.sets.length > 0 ? `<span class="muted" style="font-size:12px;">${ex.sets.length} sets</span>` : ''}
-      </div>
-    </div>`;
+      </div>`;
+    let body;
+    if (isCardio) {
+      const fields = CARDIO_FIELDS[ex.cardioType] || CARDIO_FIELDS.generic;
+      ex.cardio = ex.cardio || {};
+      body = `
+        <div class="cardio-fields">
+          ${fields.map(f => `
+            <div class="cardio-field">
+              <div class="cf-label">${f.l}</div>
+              <div class="cf-row">
+                <input type="number" inputmode="decimal" step="${f.s}" placeholder="0" value="${ex.cardio[f.k] ?? ''}" data-cardio="${ei}.${f.k}" />
+                ${f.u ? `<span class="cf-unit">${f.u}</span>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+    } else {
+      ex.sets = ex.sets || [{weight:'', reps:''}];
+      body = `
+        <div class="sets">
+          ${ex.sets.map((s, si) => `
+            <div class="set-row">
+              <div class="idx">${si + 1}</div>
+              <input type="number" inputmode="decimal" placeholder="Weight (${state.units})" value="${s.weight}" data-set="${ei}.${si}.weight" />
+              <input type="number" inputmode="numeric" placeholder="Reps" value="${s.reps}" data-set="${ei}.${si}.reps" />
+              <button class="btn sm ghost icon" data-rm-set="${ei}.${si}" aria-label="Remove set">×</button>
+            </div>
+          `).join('')}
+        </div>
+        <div class="hstack" style="margin-top: 10px;">
+          <button class="btn sm" data-add-set="${ei}">+ Add set</button>
+          ${ex.sets.length > 0 ? `<span class="muted" style="font-size:12px;">${ex.sets.length} sets</span>` : ''}
+        </div>`;
+    }
+    return `<div class="exercise-block" data-ex="${ei}">${head}${body}</div>`;
   }).join('');
+
+  // Cardio input handlers
+  $$('[data-cardio]', root).forEach(inp => {
+    inp.addEventListener('input', e => {
+      const [ei, field] = e.target.dataset.cardio.split('.');
+      logDraft.exercises[ei].cardio = logDraft.exercises[ei].cardio || {};
+      logDraft.exercises[ei].cardio[field] = e.target.value;
+    });
+  });
 
   // wire up
   $$('[data-set]', root).forEach(inp => {
@@ -1454,10 +1749,7 @@ function startFromTemplate(tid) {
   if (!t) return;
   logDraft = {
     date: todayISO(),
-    exercises: t.exercises.map(ex => ({
-      id: uid(), name: ex.name,
-      sets: Array.from({length: ex.sets || 3}, () => ({ weight: '', reps: '' }))
-    }))
+    exercises: t.exercises.map(ex => makeLogExFromTemplate(ex))
   };
   showTab('log');
 }
@@ -1507,9 +1799,16 @@ $('#tpl-save').addEventListener('click', () => {
   if (!tplDraft) return;
   const name = $('#tpl-name').value.trim();
   if (!name) { toast('Name required'); return; }
-  const exs = tplDraft.exercises.map(e => ({
-    name: (e.name||'').trim(), sets: +e.sets || 3, reps: e.reps || '8-10'
-  })).filter(e => e.name);
+  const exs = tplDraft.exercises.map(e => {
+    const known = e.type ? null : findExercise(e.name);
+    return {
+      name: (e.name||'').trim(),
+      type: e.type || (known ? known.type : 'strength'),
+      cardioType: e.cardioType || (known ? known.cardioType : null),
+      sets: +e.sets || 3,
+      reps: e.reps || '8-10'
+    };
+  }).filter(e => e.name);
   if (!exs.length) { toast('Add at least one exercise'); return; }
   if (tplDraft.id) {
     const idx = state.templates.findIndex(t => t.id === tplDraft.id);
@@ -1524,8 +1823,16 @@ $('#tpl-save').addEventListener('click', () => {
 });
 $('#tpl-add-ex').addEventListener('click', () => {
   if (!tplDraft) return;
-  tplDraft.exercises.push({ name: '', sets: 3, reps: '8-10' });
-  renderTplExercises();
+  openExercisePicker(picked => {
+    tplDraft.exercises.push({
+      name: picked.name,
+      type: picked.type,
+      cardioType: picked.cardioType || null,
+      sets: picked.type === 'cardio' ? 1 : 3,
+      reps: picked.type === 'cardio' ? '' : '8-10',
+    });
+    renderTplExercises();
+  });
 });
 
 function openTplEditor(id) {
@@ -1545,11 +1852,16 @@ function renderTplExercises() {
   root.innerHTML = tplDraft.exercises.map((ex, i) => {
     const isFirst = i === 0;
     const isLast = i === tplDraft.exercises.length - 1;
+    const isCardio = ex.type === 'cardio';
+    const cardioLabel = isCardio ? `<span class="ex-type-pill" style="margin-left:6px;">${escapeHtml(CARDIO_TYPE_LABELS[ex.cardioType] || 'Cardio')}</span>` : '';
+    const setsField = isCardio
+      ? `<div style="grid-column:span 2; color:var(--muted); font-size:13px; padding:10px 0;">Cardio — log time & distance per workout</div>`
+      : `<label class="field"><span class="lbl">Sets</span><input type="number" min="1" data-tpl="${i}.sets" value="${ex.sets}" /></label>
+         <label class="field"><span class="lbl">Reps</span><input data-tpl="${i}.reps" value="${escapeHtml(String(ex.reps))}" placeholder="e.g. 8-10" /></label>`;
     return `
     <div class="row cols-4" style="margin-bottom: 8px;">
-      <label class="field"><span class="lbl">Exercise</span><input data-tpl="${i}.name" value="${escapeHtml(ex.name)}" placeholder="e.g. Bench Press" /></label>
-      <label class="field"><span class="lbl">Sets</span><input type="number" min="1" data-tpl="${i}.sets" value="${ex.sets}" /></label>
-      <label class="field"><span class="lbl">Reps</span><input data-tpl="${i}.reps" value="${escapeHtml(String(ex.reps))}" placeholder="e.g. 8-10" /></label>
+      <label class="field"><span class="lbl">Exercise</span><input data-tpl="${i}.name" value="${escapeHtml(ex.name)}" placeholder="e.g. Bench Press" />${cardioLabel}</label>
+      ${setsField}
       <div class="hstack" style="gap:4px;">
         <button class="btn ghost icon" data-tpl-up="${i}" ${isFirst ? 'disabled' : ''} aria-label="Move up">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
@@ -1609,9 +1921,36 @@ function renderProgress() {
   }
   const prev = sel.value;
   sel.innerHTML = names.map(n => `<option ${prev===n?'selected':''}>${escapeHtml(n)}</option>`).join('');
+  updateMetricOptions();
   drawChart();
 }
-$('#chart-exercise').addEventListener('change', drawChart);
+function isCardioExerciseName(name) {
+  for (const w of state.workouts) {
+    if (w.freeform) continue;
+    const ex = (w.exercises||[]).find(e => e.name === name);
+    if (ex) return ex.type === 'cardio';
+  }
+  return false;
+}
+function updateMetricOptions() {
+  const name = $('#chart-exercise').value;
+  const metricSel = $('#chart-metric');
+  const prev = metricSel.value;
+  if (isCardioExerciseName(name)) {
+    metricSel.innerHTML = `
+      <option value="time">Time / session</option>
+      <option value="distance">Distance / session</option>
+      <option value="speed">Avg speed</option>
+      <option value="calories">Calories</option>`;
+  } else {
+    metricSel.innerHTML = `
+      <option value="topSet">Top set (weight)</option>
+      <option value="e1rm">Estimated 1RM</option>
+      <option value="volume">Volume / session</option>`;
+  }
+  if ([...metricSel.options].some(o => o.value === prev)) metricSel.value = prev;
+}
+$('#chart-exercise').addEventListener('change', () => { updateMetricOptions(); drawChart(); });
 $('#chart-metric').addEventListener('change', drawChart);
 
 function drawChart() {
@@ -1621,12 +1960,22 @@ function drawChart() {
   for (const w of state.workouts) {
     if (w.freeform) continue;
     const ex = w.exercises.find(e => e.name === name);
-    if (!ex || !ex.sets.length) continue;
-    let v = 0;
-    if (metric === 'topSet') v = Math.max(...ex.sets.map(s => +s.weight || 0));
-    if (metric === 'e1rm') v = Math.max(...ex.sets.map(s => e1rm(+s.weight, +s.reps)));
-    if (metric === 'volume') v = ex.sets.reduce((sum, s) => sum + (+s.weight||0)*(+s.reps||0), 0);
-    points.push({ x: w.date, y: v });
+    if (!ex) continue;
+    let v = null;
+    if (ex.type === 'cardio') {
+      const c = ex.cardio || {};
+      if (metric === 'time' && c.time != null) v = +c.time;
+      else if (metric === 'distance' && c.distance != null) v = +c.distance;
+      else if (metric === 'speed' && c.speed != null) v = +c.speed;
+      else if (metric === 'calories' && c.calories != null) v = +c.calories;
+    } else {
+      const sets = ex.sets || [];
+      if (!sets.length) continue;
+      if (metric === 'topSet') v = Math.max(...sets.map(s => +s.weight || 0));
+      else if (metric === 'e1rm') v = Math.max(...sets.map(s => e1rm(+s.weight, +s.reps)));
+      else if (metric === 'volume') v = sets.reduce((sum, s) => sum + (+s.weight||0)*(+s.reps||0), 0);
+    }
+    if (v != null && !isNaN(v)) points.push({ x: w.date, y: v });
   }
   points.sort((a,b) => a.x.localeCompare(b.x));
 
