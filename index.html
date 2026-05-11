@@ -892,7 +892,11 @@
       </button>
     </nav>
     <div class="drawer-foot">
-      <div class="muted" style="font-size:12px; line-height:1.5;">Saved to this device. Add to Home Screen on iPhone for permanent storage.</div>
+      <button id="install-btn" class="btn" style="width:100%; justify-content:center; margin-bottom:10px;" hidden>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M12 3v12M5 12l7 7 7-7M5 21h14"/></svg>
+        Install app
+      </button>
+      <div class="muted" style="font-size:12px; line-height:1.5;">Saved to this device.</div>
     </div>
   </aside>
 </div>
@@ -1114,23 +1118,27 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
 /* ============================================================
    WELCOME MODAL (first run)
    ============================================================ */
-const WELCOME_KEY = 'liftlog.welcomed.v1';
-function showWelcome() {
-  if (localStorage.getItem(WELCOME_KEY)) return;
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  if (isStandalone) {
-    localStorage.setItem(WELCOME_KEY, '1');
-    return;
-  }
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  const isMobile = isIOS || isAndroid;
-  if (!isMobile) return;
-  $('#welcome-ios').hidden = !isIOS;
-  $('#welcome-android').hidden = !isAndroid;
+const WELCOME_KEY = 'liftlog.welcomed.v3';
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+const isIOSDevice = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isAndroidDevice = () => /Android/i.test(navigator.userAgent);
+
+function openInstallModal() {
+  const iOS = isIOSDevice();
+  const android = isAndroidDevice();
+  $('#welcome-ios').hidden = !iOS;
+  $('#welcome-android').hidden = !android;
+  if (!iOS && !android) $('#welcome-ios').hidden = false;
   const m = $('#welcome-modal');
   m.hidden = false;
   requestAnimationFrame(() => m.classList.add('open'));
+}
+
+function showWelcome() {
+  if (localStorage.getItem(WELCOME_KEY)) return;
+  if (isStandalone()) { localStorage.setItem(WELCOME_KEY, '1'); return; }
+  if (!isIOSDevice() && !isAndroidDevice()) return;
+  openInstallModal();
 }
 function dismissWelcome() {
   const m = $('#welcome-modal');
@@ -1141,6 +1149,14 @@ function dismissWelcome() {
 $('#welcome-ok').addEventListener('click', dismissWelcome);
 $('#welcome-skip').addEventListener('click', dismissWelcome);
 $('#welcome-modal .modal-backdrop').addEventListener('click', dismissWelcome);
+
+if (!isStandalone()) {
+  $('#install-btn').hidden = false;
+}
+$('#install-btn').addEventListener('click', () => {
+  closeDrawer();
+  setTimeout(openInstallModal, 280);
+});
 
 /* ============================================================
    TODAY VIEW
