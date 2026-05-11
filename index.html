@@ -339,6 +339,7 @@
     font-family: inherit;
   }
   .btn:hover { border-color: #44444f; background: #20202a; }
+  .btn:disabled, .btn[disabled] { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
   .btn.primary {
     background: linear-gradient(180deg, #ff7d2e, var(--accent));
     color: #1a0a00;
@@ -1361,13 +1362,21 @@ function renderLogExercises() {
     return;
   }
   root.innerHTML = logDraft.exercises.map((ex, ei) => {
+    const isFirst = ei === 0;
+    const isLast = ei === logDraft.exercises.length - 1;
     return `
     <div class="exercise-block" data-ex="${ei}">
       <div class="ex-head">
         <div class="ex-name">
           ${escapeHtml(ex.name)}
         </div>
-        <div class="hstack">
+        <div class="hstack" style="gap:4px;">
+          <button class="btn sm ghost icon" data-ex-up="${ei}" ${isFirst ? 'disabled' : ''} aria-label="Move up">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+          </button>
+          <button class="btn sm ghost icon" data-ex-down="${ei}" ${isLast ? 'disabled' : ''} aria-label="Move down">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
           <button class="btn sm ghost" data-rm-ex="${ei}">Remove</button>
         </div>
       </div>
@@ -1416,6 +1425,24 @@ function renderLogExercises() {
       const ei = +btn.dataset.rmEx;
       if (confirm('Remove this exercise?')) {
         logDraft.exercises.splice(ei, 1);
+        renderLogExercises();
+      }
+    });
+  });
+  $$('[data-ex-up]', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ei = +btn.dataset.exUp;
+      if (ei > 0) {
+        [logDraft.exercises[ei-1], logDraft.exercises[ei]] = [logDraft.exercises[ei], logDraft.exercises[ei-1]];
+        renderLogExercises();
+      }
+    });
+  });
+  $$('[data-ex-down]', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ei = +btn.dataset.exDown;
+      if (ei < logDraft.exercises.length - 1) {
+        [logDraft.exercises[ei+1], logDraft.exercises[ei]] = [logDraft.exercises[ei], logDraft.exercises[ei+1]];
         renderLogExercises();
       }
     });
@@ -1515,14 +1542,25 @@ function openTplEditor(id) {
 function renderTplExercises() {
   if (!tplDraft) return;
   const root = $('#tpl-exercises');
-  root.innerHTML = tplDraft.exercises.map((ex, i) => `
+  root.innerHTML = tplDraft.exercises.map((ex, i) => {
+    const isFirst = i === 0;
+    const isLast = i === tplDraft.exercises.length - 1;
+    return `
     <div class="row cols-4" style="margin-bottom: 8px;">
       <label class="field"><span class="lbl">Exercise</span><input data-tpl="${i}.name" value="${escapeHtml(ex.name)}" placeholder="e.g. Bench Press" /></label>
       <label class="field"><span class="lbl">Sets</span><input type="number" min="1" data-tpl="${i}.sets" value="${ex.sets}" /></label>
       <label class="field"><span class="lbl">Reps</span><input data-tpl="${i}.reps" value="${escapeHtml(String(ex.reps))}" placeholder="e.g. 8-10" /></label>
-      <button class="btn ghost icon" data-tpl-rm="${i}" aria-label="Remove">×</button>
+      <div class="hstack" style="gap:4px;">
+        <button class="btn ghost icon" data-tpl-up="${i}" ${isFirst ? 'disabled' : ''} aria-label="Move up">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+        </button>
+        <button class="btn ghost icon" data-tpl-down="${i}" ${isLast ? 'disabled' : ''} aria-label="Move down">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <button class="btn ghost icon" data-tpl-rm="${i}" aria-label="Remove">×</button>
+      </div>
     </div>
-  `).join('');
+  `;}).join('');
   $$('[data-tpl]', root).forEach(inp => {
     inp.addEventListener('input', e => {
       const [i, field] = e.target.dataset.tpl.split('.');
@@ -1533,6 +1571,24 @@ function renderTplExercises() {
     btn.addEventListener('click', () => {
       tplDraft.exercises.splice(+btn.dataset.tplRm, 1);
       renderTplExercises();
+    });
+  });
+  $$('[data-tpl-up]', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.tplUp;
+      if (i > 0) {
+        [tplDraft.exercises[i-1], tplDraft.exercises[i]] = [tplDraft.exercises[i], tplDraft.exercises[i-1]];
+        renderTplExercises();
+      }
+    });
+  });
+  $$('[data-tpl-down]', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.tplDown;
+      if (i < tplDraft.exercises.length - 1) {
+        [tplDraft.exercises[i+1], tplDraft.exercises[i]] = [tplDraft.exercises[i], tplDraft.exercises[i+1]];
+        renderTplExercises();
+      }
     });
   });
 }
