@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Lift Log" />
 <meta name="mobile-web-app-capable" content="yes" />
-<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Lift Log","short_name":"Lift Log","start_url":".","display":"standalone","background_color":"%230a0a0b","theme_color":"%230a0a0b","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" rx=\"112\" fill=\"%230a0a0b\"/><g fill=\"%23ff6a1a\"><rect x=\"40\" y=\"264\" width=\"32\" height=\"112\" rx=\"12\"/><rect x=\"88\" y=\"232\" width=\"40\" height=\"176\" rx=\"16\"/><rect x=\"184\" y=\"80\" width=\"72\" height=\"288\" rx=\"16\"/><rect x=\"184\" y=\"304\" width=\"128\" height=\"72\" rx=\"16\"/><rect x=\"384\" y=\"232\" width=\"40\" height=\"176\" rx=\"16\"/><rect x=\"440\" y=\"264\" width=\"32\" height=\"112\" rx=\"12\"/></g></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}' />
-<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="5" y="33" width="4" height="14" rx="1.5"/><rect x="11" y="29" width="5" height="22" rx="2"/><rect x="23" y="10" width="9" height="36" rx="2"/><rect x="23" y="38" width="16" height="9" rx="2"/><rect x="48" y="29" width="5" height="22" rx="2"/><rect x="55" y="33" width="4" height="14" rx="1.5"/></g></svg>' />
-<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="40" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="14" y="93" width="11" height="39" rx="4"/><rect x="31" y="82" width="14" height="62" rx="5"/><rect x="65" y="28" width="25" height="101" rx="6"/><rect x="65" y="107" width="45" height="25" rx="6"/><rect x="135" y="82" width="14" height="62" rx="5"/><rect x="155" y="93" width="11" height="39" rx="4"/></g></svg>' />
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Lift Log","short_name":"Lift Log","start_url":".","display":"standalone","background_color":"%230a0a0b","theme_color":"%230a0a0b","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" rx=\"112\" fill=\"%230a0a0b\"/><g fill=\"%23ff6a1a\"><rect x=\"24\" y=\"256\" width=\"40\" height=\"120\" rx=\"12\"/><rect x=\"80\" y=\"224\" width=\"48\" height=\"176\" rx=\"16\"/><rect x=\"176\" y=\"72\" width=\"80\" height=\"296\" rx=\"16\"/><rect x=\"176\" y=\"304\" width=\"160\" height=\"80\" rx=\"16\"/><rect x=\"384\" y=\"224\" width=\"48\" height=\"176\" rx=\"16\"/><rect x=\"448\" y=\"256\" width=\"40\" height=\"120\" rx=\"12\"/></g></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}' />
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="3" y="32" width="5" height="15" rx="1.5"/><rect x="10" y="28" width="6" height="22" rx="2"/><rect x="22" y="9" width="10" height="37" rx="2"/><rect x="22" y="38" width="20" height="10" rx="2"/><rect x="48" y="28" width="6" height="22" rx="2"/><rect x="56" y="32" width="5" height="15" rx="1.5"/></g></svg>' />
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="40" fill="%230a0a0b"/><g fill="%23ff6a1a"><rect x="8" y="90" width="14" height="42" rx="4"/><rect x="28" y="79" width="17" height="62" rx="6"/><rect x="62" y="25" width="28" height="104" rx="6"/><rect x="62" y="107" width="56" height="28" rx="6"/><rect x="135" y="79" width="17" height="62" rx="6"/><rect x="158" y="90" width="14" height="42" rx="4"/></g></svg>' />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -556,6 +556,44 @@
   .chart-wrap { position: relative; height: 280px; }
   .chart-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
+  /* Training calendar heatmap */
+  .cal-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(7, 1fr);
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .cal-cell {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    background: #1d1d22;
+    transition: transform .1s ease;
+  }
+  .cal-cell.lvl-1 { background: rgba(255,106,26,.25); }
+  .cal-cell.lvl-2 { background: rgba(255,106,26,.50); }
+  .cal-cell.lvl-3 { background: rgba(255,106,26,.75); }
+  .cal-cell.lvl-4 { background: var(--accent); }
+  .cal-legend {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 12px;
+    font-size: 11px; color: var(--muted);
+  }
+  .cal-legend .cal-cell { width: 12px; height: 12px; }
+  .pr-list .pr-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .pr-list .pr-item:last-child { margin-bottom: 0; }
+  .pr-list .pr-name { font-weight: 600; }
+  .pr-list .pr-val { font-family: 'JetBrains Mono', ui-monospace, monospace; color: var(--accent); font-weight: 700; }
+  .pr-list .pr-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
   /* Hide scrollbar in tab nav */
   nav.tabs::-webkit-scrollbar { display: none; }
 
@@ -686,12 +724,12 @@
         <svg viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
           <rect width="64" height="64" rx="14" fill="#0a0a0b"/>
           <g fill="#ff6a1a">
-            <rect x="5" y="33" width="4" height="14" rx="1.5"/>
-            <rect x="11" y="29" width="5" height="22" rx="2"/>
-            <rect x="23" y="10" width="9" height="36" rx="2"/>
-            <rect x="23" y="38" width="16" height="9" rx="2"/>
-            <rect x="48" y="29" width="5" height="22" rx="2"/>
-            <rect x="55" y="33" width="4" height="14" rx="1.5"/>
+            <rect x="3" y="32" width="5" height="15" rx="1.5"/>
+            <rect x="10" y="28" width="6" height="22" rx="2"/>
+            <rect x="22" y="9" width="10" height="37" rx="2"/>
+            <rect x="22" y="38" width="20" height="10" rx="2"/>
+            <rect x="48" y="28" width="6" height="22" rx="2"/>
+            <rect x="56" y="32" width="5" height="15" rx="1.5"/>
           </g>
         </svg>
       </span>
@@ -712,7 +750,6 @@
 
   <nav class="tabs top-tabs" role="tablist">
     <button data-tab="today" class="active">Today</button>
-    <button data-tab="quick">Quick log</button>
     <button data-tab="log">Log workout</button>
     <button data-tab="templates">Templates</button>
     <button data-tab="progress">Progress</button>
@@ -748,38 +785,6 @@
     <div class="card">
       <h2>Recent workouts</h2>
       <div id="recent-list"></div>
-    </div>
-  </section>
-
-  <!-- QUICK LOG -->
-  <section id="view-quick" class="view" hidden>
-    <div class="card">
-      <h2>Quick log <span class="sub">paste your workout, no structure needed</span></h2>
-      <div class="row cols-2" style="margin-bottom: 14px;">
-        <label class="field">
-          <span class="lbl">Date</span>
-          <input type="date" id="quick-date" />
-        </label>
-        <label class="field">
-          <span class="lbl">Title (optional)</span>
-          <input type="text" id="quick-title" placeholder="e.g. Push Day" />
-        </label>
-      </div>
-      <label class="field">
-        <span class="lbl">Workout notes</span>
-        <textarea id="quick-notes" rows="10" placeholder="Bench Press 4x8 @ 185&#10;Incline DB Press 3x10 @ 60&#10;Cable Fly 3x12 @ 25&#10;&#10;Felt strong today."></textarea>
-      </label>
-      <div class="hstack" style="margin-top: 12px;">
-        <span class="muted" style="font-size: 12px;">Saves as-is — no parsing.</span>
-        <div class="spacer"></div>
-        <button class="btn ghost" id="quick-clear">Clear</button>
-        <button class="btn primary" id="quick-save">Save</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Recent quick logs</h2>
-      <div id="quick-recent"></div>
     </div>
   </section>
 
@@ -836,6 +841,49 @@
 
   <!-- PROGRESS -->
   <section id="view-progress" class="view" hidden>
+    <div class="kpis" style="margin-top: 0;">
+      <div class="kpi accent">
+        <div class="label">All-time workouts</div>
+        <div class="value mono" id="prog-total-workouts">0</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Sets logged</div>
+        <div class="value mono" id="prog-total-sets">0</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Volume lifted</div>
+        <div class="value mono" id="prog-total-volume">0<small>lbs</small></div>
+      </div>
+      <div class="kpi">
+        <div class="label">Cardio time</div>
+        <div class="value mono" id="prog-cardio-time">0<small>min</small></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Training calendar <span class="sub">last 13 weeks</span></h2>
+      <div id="cal-heatmap"></div>
+      <div class="cal-legend">
+        <span>Less</span>
+        <span class="cal-cell lvl-0"></span>
+        <span class="cal-cell lvl-1"></span>
+        <span class="cal-cell lvl-2"></span>
+        <span class="cal-cell lvl-3"></span>
+        <span class="cal-cell lvl-4"></span>
+        <span>More</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Muscle volume <span class="sub">last 30 days</span></h2>
+      <div id="muscle-chart-wrap" class="chart-wrap" style="height:260px;"><canvas id="muscle-chart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2>Personal records <span class="sub">top estimated 1RM</span></h2>
+      <div id="pr-list"></div>
+    </div>
+
     <div class="card">
       <h2>Progress chart
         <div class="chart-controls">
@@ -918,10 +966,6 @@
       <button data-tab="today" class="active">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
         <span>Today</span>
-      </button>
-      <button data-tab="quick">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
-        <span>Quick log</span>
       </button>
       <button data-tab="log">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4v16h16v-7"/><path d="M18 2l4 4-11 11H7v-4z"/></svg>
@@ -1234,7 +1278,6 @@ function showTab(tab) {
   $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   $$('section.view').forEach(s => s.hidden = (s.id !== 'view-' + tab));
   if (tab === 'today') renderToday();
-  if (tab === 'quick') renderQuick();
   if (tab === 'log') renderLogView();
   if (tab === 'templates') renderTemplates();
   if (tab === 'progress') renderProgress();
@@ -1413,54 +1456,6 @@ function summarizeSets(sets) {
   const tops = sets.reduce((m, s) => (+s.weight > (+m.weight||0) ? s : m), sets[0]);
   return `${sets.length} × top ${tops.weight}${state.units} × ${tops.reps}`;
 }
-
-/* ============================================================
-   QUICK LOG VIEW
-   ============================================================ */
-function renderQuick() {
-  if (!$('#quick-date').value) $('#quick-date').value = todayISO();
-  const recent = state.workouts
-    .filter(w => w.freeform)
-    .sort((a,b) => b.date.localeCompare(a.date))
-    .slice(0, 8);
-  const root = $('#quick-recent');
-  if (!recent.length) {
-    root.innerHTML = '<div class="empty"><p>No quick logs yet. Paste a workout above to save your first one.</p></div>';
-  } else {
-    root.innerHTML = recent.map(w => `
-      <div class="workout-item">
-        <header>
-          <div class="when">${fmtDate(w.date)}${w.title ? ' · ' + escapeHtml(w.title) : ''}</div>
-          <div class="meta">
-            <button class="btn sm danger" data-rm-quick="${w.id}">Delete</button>
-          </div>
-        </header>
-        <pre class="freeform-notes">${escapeHtml(w.notes || '')}</pre>
-      </div>
-    `).join('');
-    $$('[data-rm-quick]', root).forEach(b => b.addEventListener('click', () => {
-      if (!confirm('Delete this quick log?')) return;
-      state.workouts = state.workouts.filter(w => w.id !== b.dataset.rmQuick);
-      save(); renderQuick(); toast('Deleted');
-    }));
-  }
-}
-$('#quick-save').addEventListener('click', () => {
-  const date = $('#quick-date').value || todayISO();
-  const title = $('#quick-title').value.trim();
-  const notes = $('#quick-notes').value.trim();
-  if (!notes) { toast('Add some notes first'); return; }
-  state.workouts.push({ id: uid(), date, freeform: true, title, notes });
-  save();
-  $('#quick-title').value = '';
-  $('#quick-notes').value = '';
-  toast('Quick log saved 💪', 'success');
-  renderQuick();
-});
-$('#quick-clear').addEventListener('click', () => {
-  $('#quick-title').value = '';
-  $('#quick-notes').value = '';
-});
 
 /* ============================================================
    LOG VIEW
@@ -1910,6 +1905,11 @@ function renderTplExercises() {
    ============================================================ */
 let chart;
 function renderProgress() {
+  renderProgressKPIs();
+  renderCalendar();
+  renderMuscleChart();
+  renderPRs();
+
   const sel = $('#chart-exercise');
   const names = [...new Set(
     state.workouts.filter(w => !w.freeform).flatMap(w => w.exercises.map(e => e.name))
@@ -1923,6 +1923,168 @@ function renderProgress() {
   sel.innerHTML = names.map(n => `<option ${prev===n?'selected':''}>${escapeHtml(n)}</option>`).join('');
   updateMetricOptions();
   drawChart();
+}
+
+function renderProgressKPIs() {
+  let totalWorkouts = 0;
+  let totalSets = 0;
+  let totalVolume = 0;
+  let cardioMinutes = 0;
+  for (const w of state.workouts) {
+    if (w.freeform) continue;
+    totalWorkouts++;
+    for (const ex of (w.exercises || [])) {
+      if (ex.type === 'cardio') {
+        cardioMinutes += +(ex.cardio?.time || 0);
+      } else {
+        const sets = ex.sets || [];
+        totalSets += sets.length;
+        totalVolume += sets.reduce((s, st) => s + (+st.weight||0) * (+st.reps||0), 0);
+      }
+    }
+  }
+  $('#prog-total-workouts').textContent = totalWorkouts;
+  $('#prog-total-sets').textContent = totalSets;
+  $('#prog-total-volume').innerHTML = Math.round(totalVolume).toLocaleString() + '<small>' + state.units + '</small>';
+  $('#prog-cardio-time').innerHTML = Math.round(cardioMinutes) + '<small>min</small>';
+}
+
+function renderCalendar() {
+  // 13 columns × 7 rows, ending at today
+  const cols = 13;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  // Find the Sunday of the most recent week
+  const endDayOfWeek = today.getDay();
+  const days = [];
+  // Build a flat list of dates from (today - 13*7 days + offset) to today
+  // We'll grid by column-major: each column is one week (Sun-Sat)
+  // Compute start = Sunday that's (cols-1) weeks before this week's Sunday
+  const thisSunday = new Date(today);
+  thisSunday.setDate(today.getDate() - endDayOfWeek);
+  const start = new Date(thisSunday);
+  start.setDate(start.getDate() - (cols - 1) * 7);
+
+  // Build map of date -> workouts count
+  const counts = {};
+  for (const w of state.workouts) {
+    if (w.freeform) continue;
+    counts[w.date] = (counts[w.date] || 0) + 1;
+  }
+  const max = Math.max(1, ...Object.values(counts));
+
+  // Each week column starts on the Sunday for that column
+  let html = '<div class="cal-grid">';
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < 7; r++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + c * 7 + r);
+      if (d > today) {
+        html += '<div></div>';
+        continue;
+      }
+      const iso = d.toISOString().slice(0, 10);
+      const n = counts[iso] || 0;
+      let lvl = 0;
+      if (n >= 1) lvl = Math.min(4, Math.ceil((n / max) * 4)) || 1;
+      html += `<div class="cal-cell lvl-${lvl}" title="${iso}${n ? ` — ${n} workout${n>1?'s':''}` : ''}"></div>`;
+    }
+  }
+  html += '</div>';
+  $('#cal-heatmap').innerHTML = html;
+}
+
+let muscleChart;
+function renderMuscleChart() {
+  const cutoff = daysAgo(30);
+  const totals = {};
+  for (const w of state.workouts) {
+    if (w.freeform || w.date < cutoff) continue;
+    for (const ex of (w.exercises || [])) {
+      if (ex.type === 'cardio') continue;
+      const known = findExercise(ex.name);
+      const muscle = (known && known.muscle) || 'Other';
+      const vol = (ex.sets||[]).reduce((s, st) => s + (+st.weight||0) * (+st.reps||0), 0);
+      totals[muscle] = (totals[muscle] || 0) + vol;
+    }
+  }
+  const entries = Object.entries(totals).sort((a,b) => b[1] - a[1]);
+  const wrap = $('#muscle-chart-wrap');
+  if (!entries.length) {
+    if (muscleChart) { muscleChart.destroy(); muscleChart = null; }
+    wrap.innerHTML = '<div class="empty"><p>No strength workouts in the last 30 days.</p></div>';
+    return;
+  }
+  // Ensure canvas exists
+  if (!wrap.querySelector('canvas')) {
+    wrap.innerHTML = '<canvas id="muscle-chart"></canvas>';
+  }
+  const ctx = $('#muscle-chart').getContext('2d');
+  if (muscleChart) muscleChart.destroy();
+  muscleChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: entries.map(e => e[0]),
+      datasets: [{
+        data: entries.map(e => e[1]),
+        backgroundColor: 'rgba(255,106,26,.7)',
+        borderColor: '#ff6a1a',
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#16161a',
+          borderColor: '#33333d',
+          borderWidth: 1,
+          callbacks: { label: (c) => c.parsed.x.toLocaleString() + ' ' + state.units }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#8a8a93' } },
+        y: { grid: { display: false }, ticks: { color: '#f5f5f7', font: { weight: '600' } } }
+      }
+    }
+  });
+}
+
+function renderPRs() {
+  // Top estimated 1RM per exercise (top 8)
+  const best = {};
+  for (const w of state.workouts) {
+    if (w.freeform) continue;
+    for (const ex of (w.exercises || [])) {
+      if (ex.type === 'cardio') continue;
+      for (const s of (ex.sets || [])) {
+        const e = e1rm(+s.weight, +s.reps);
+        if (!e) continue;
+        if (!best[ex.name] || e > best[ex.name].e1rm) {
+          best[ex.name] = { e1rm: e, weight: +s.weight, reps: +s.reps, date: w.date };
+        }
+      }
+    }
+  }
+  const sorted = Object.entries(best).sort((a,b) => b[1].e1rm - a[1].e1rm).slice(0, 8);
+  const root = $('#pr-list');
+  if (!sorted.length) {
+    root.innerHTML = '<div class="empty"><p>Log a few sets to see your PRs.</p></div>';
+    return;
+  }
+  root.innerHTML = sorted.map(([name, pr]) => `
+    <div class="pr-item">
+      <div>
+        <div class="pr-name">${escapeHtml(name)}</div>
+        <div class="pr-date">${pr.weight} ${state.units} × ${pr.reps} · ${fmtDate(pr.date)}</div>
+      </div>
+      <div class="pr-val">${pr.e1rm} ${state.units}</div>
+    </div>
+  `).join('');
 }
 function isCardioExerciseName(name) {
   for (const w of state.workouts) {
@@ -2087,7 +2249,6 @@ function escapeHtml(s) {
    ============================================================ */
 load();
 const _ld = $('#log-date'); if (_ld) _ld.value = todayISO();
-const _qd = $('#quick-date'); if (_qd) _qd.value = todayISO();
 showTab('today');
 showWelcome();
 </script>
